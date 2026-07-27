@@ -7,6 +7,9 @@ const {createStationMap } =require("./services/graphBuilder");
 const {createRouteMap } =require("./services/graphBuilder");
 const {createTripMap } =require("./services/graphBuilder");
 const {groupStopsByTrip,sortTripStops,buildGraph } =require("./services/graphBuilder");
+
+const {findShortestPath} = require("./services/dijkstra");
+
 app.use(cors());
 app.use(express.json());
 
@@ -19,6 +22,9 @@ async function start(){
         const stopTimes =await loadFile("stop_times.txt");
 
         const stationMap=createStationMap(stops);
+        stationMap.forEach(station => {
+            console.log(station.id, "-", station.name);
+        });
         // stationMap.forEach(station => console.log(station.name)); 
         const routeMap= createRouteMap(routes);
         const tripMap=createTripMap(trips);
@@ -26,6 +32,13 @@ async function start(){
         sortTripStops(tripStops);
         // const graph = buildGraph(tripStops, tripMap, routeMap);
         const graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
+
+        //testing dikstra
+        // const result = findShortestPath(graph, "21", "1");
+        const result = findShortestPath(graph, "21", "58");
+        // const result = findShortestPath(graph, "178", "84");
+        // const result = findShortestPath(graph, "178", "211");
+        // const result = findShortestPath(graph, "214", "60");
 
         console.log("Stops:", stops.length);
         console.log("Routes:", routes.length);
@@ -45,6 +58,16 @@ async function start(){
         // console.log(tripStops.get("0").slice(0, 5));
         console.log("Graph Size:", graph.size);
         console.log(graph.get("21"));
+
+        console.log("route distance:", result.distance);
+
+        console.log("source-",stationMap.get("21").name);
+        console.log("destination-",stationMap.get("58").name);
+        // console.log("source-",stationMap.get("214").name);
+        // console.log("destination-",stationMap.get("60").name);
+
+        console.log("Route:", result.path);
+        
 
     } catch(err){
         console.error(err);
