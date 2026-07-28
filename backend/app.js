@@ -9,6 +9,7 @@ const {createTripMap } =require("./services/graphBuilder");
 const {groupStopsByTrip,sortTripStops,buildGraph } =require("./services/graphBuilder");
 
 const {findShortestPath} = require("./services/dijkstra");
+const { patchNetwork } = require("./services/networkPatch");
 
 app.use(cors());
 app.use(express.json());
@@ -22,10 +23,9 @@ async function start(){
         const stopTimes =await loadFile("stop_times.txt");
 
         const stationMap=createStationMap(stops);
-        stationMap.forEach(station => {
-            console.log(station.id, "-", station.name);
-        });
-        // stationMap.forEach(station => console.log(station.name)); 
+        // stationMap.forEach(station => {
+        //     console.log(station.id, "-", station.name);
+        // });
         const routeMap= createRouteMap(routes);
         const tripMap=createTripMap(trips);
         const tripStops = groupStopsByTrip(stopTimes);
@@ -33,12 +33,28 @@ async function start(){
         // const graph = buildGraph(tripStops, tripMap, routeMap);
         const graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
 
+        patchNetwork(graph,stationMap);
+
+        stationMap.forEach(station => {
+        if( station.name === "Majlis Park" ||
+            station.name === "Maujpur - Babarpur" ||
+            station.name === "Janak Puri West"  ||
+            station.name === "Haiderpur Badli Mor"
+        ){
+            console.log(station);
+        }
+        });
+
         //testing dikstra
         // const result = findShortestPath(graph, "21", "1");
-        const result = findShortestPath(graph, "21", "58");
+
+        // const result = findShortestPath(graph, "21", "58");
+
         // const result = findShortestPath(graph, "178", "84");
         // const result = findShortestPath(graph, "178", "211");
         // const result = findShortestPath(graph, "214", "60");
+        // const result = findShortestPath(graph, "100", "160");
+        const result = findShortestPath(graph, "177", "46");
 
         console.log("Stops:", stops.length);
         console.log("Routes:", routes.length);
@@ -68,7 +84,16 @@ async function start(){
 
         console.log("Route:", result.path);
         
+        
 
+        // console.log(graph.get("173")); // Majlis Park
+        // console.log(graph.get("521")); // Burari
+        
+
+        // console.log("Stops:", stops.length);
+        // console.log("Routes:", routes.length);
+        // console.log("Graph Size:", graph.size);
+        // console.log("station map size",stationMap.size);
     } catch(err){
         console.error(err);
     }
