@@ -1,0 +1,31 @@
+<form action="/api/route" method="post">
+
+    <div class="mt-2">
+        <label for="source" class="form-label">From</label>
+        <input
+            name="source"
+            id="source"
+            type="text"
+            class="form-control"
+            placeholder="Enter source station"
+            required
+        >
+    </div>
+
+    <div class="mt-2">
+        <label for="destination" class="form-label">To</label>
+        <input
+            name="destination"
+            id="destination"
+            type="text"
+            class="form-control"
+            placeholder="Enter destination station"
+            required
+        >
+    </div>
+
+    <button class="btn btn-success mt-3">
+        Find Route
+    </button>
+
+</form>

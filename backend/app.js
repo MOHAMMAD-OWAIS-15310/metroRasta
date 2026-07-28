@@ -1,5 +1,9 @@
 const express =require("express");
 const cors =require("cors");
+const path = require("path");
+
+let stationMap;
+let graph;
 
 const app = express();
 const {loadFile }=require("./services/metroLoader");
@@ -13,6 +17,7 @@ const { patchNetwork } = require("./services/networkPatch");
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 async function start(){
@@ -22,7 +27,7 @@ async function start(){
         const trips= await loadFile("trips.txt");
         const stopTimes =await loadFile("stop_times.txt");
 
-        const stationMap=createStationMap(stops);
+         stationMap=createStationMap(stops);
         // stationMap.forEach(station => {
         //     console.log(station.id, "-", station.name);
         // });
@@ -31,7 +36,7 @@ async function start(){
         const tripStops = groupStopsByTrip(stopTimes);
         sortTripStops(tripStops);
         // const graph = buildGraph(tripStops, tripMap, routeMap);
-        const graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
+         graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
 
         patchNetwork(graph,stationMap);
 
@@ -98,7 +103,108 @@ async function start(){
         console.error(err);
     }
 }
+
+function findStationId(stationMap, stationName) {
+    const searchName = stationName.trim().toLowerCase();
+
+    for (const [id, station] of stationMap) {
+        if (station.name.trim().toLowerCase() === searchName) {
+            return id;
+        }
+    }
+
+    return null;
+}
+
 start();
+
+// app.post("/api/route", (req, res) => {
+
+//     const { source, destination } = req.body;
+
+//     const start = findStationId(stationMap, source);
+//     const end = findStationId(stationMap, destination);
+
+//     console.log("Source ID:", start);
+//     console.log("Destination ID:", end);
+
+//     res.json({
+//         source,
+//         destination,
+//         start,
+//         end
+//     });
+// });
+
+app.post("/api/route", (req, res)=>{
+
+    const {source, destination } = req.body;
+
+    const start = findStationId(stationMap, source);
+    const end = findStationId(stationMap, destination);
+
+    console.log("Source ID:", start);
+    console.log("Destination ID:", end);
+
+    if (!start || !end) {
+        return res.status(404).json({
+            error: "Station not found"
+        });
+    }
+
+    const result = findShortestPath(graph, start, end);
+
+    if (result.distance === Infinity) {
+        return res.status(404).json({
+            error: "No route found between these stations"
+        });
+    }
+
+    console.log("Route:", result.path);
+    console.log("Distance:", result.distance);
+
+    // res.json({
+    //     source,
+    //     destination,
+    //     distance: result.distance,
+    //     route: result.path
+    // });
+
+    const route = result.path.map(step =>({
+        id: step.station,
+        name: stationMap.get(step.station).name,
+        line: step.line
+    }));
+
+    const interchanges = [];
+
+    for(let i = 1; i < route.length; i++){
+        if (
+            route[i].line !== route[i - 1].line &&
+            route[i - 1].line !== "START"
+        ) {
+            interchanges.push({
+                station: route[i].name,
+                from: route[i - 1].line,
+                to: route[i].line
+            });
+        }
+    }
+    const stationMoves = route.length - 1;
+
+    res.json({
+        source,
+        destination,
+        stationMoves,
+        interchanges,
+        cost: result.distance,
+        route
+    });
+});
+
+app.get("/route", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
 
 app.get("/", (req, res) => {
     res.send("metroRasta is running");
