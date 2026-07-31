@@ -3,7 +3,7 @@ function createStationMap(stops){
 
     for(const stop of stops){
         stationMap.set(stop.stop_id,{
-            id  : stop.stop_id,
+            id   : stop.stop_id,
             name: stop.stop_name,
             lat: parseFloat(stop.stop_lat),
              lon: parseFloat(stop.stop_lon),
@@ -13,11 +13,34 @@ function createStationMap(stops){
     return stationMap;
 }
 
+// function createRouteMap(routes) {
+//     const routeMap = new Map();
+//     for(const route of routes){
+//         routeMap.set(route.route_id,  route.route_long_name);
+//     }
+//     return routeMap;
+// }
+
 function createRouteMap(routes) {
     const routeMap = new Map();
-    for(const route of routes){
-        routeMap.set(route.route_id,  route.route_long_name);
+
+    for (const route of routes) {
+        routeMap.set(route.route_id, {
+            shortName: route.route_short_name,
+            longName: route.route_long_name
+        });
     }
+    // console.log(
+    // [...routeMap.entries()]
+    //     .filter(([id, route]) => route.longName.startsWith("BLUE"))
+    // );
+    //testing
+    for (const route of routes) {
+    if (route.route_long_name.startsWith("PINK")) {
+        console.log(route.route_short_name, route.route_long_name);
+    }
+    }
+
     return routeMap;
 }
 
@@ -55,6 +78,8 @@ function sortTripStops(tripStops){
 function buildGraph(tripStops, tripMap, routeMap, stationMap) {
     const graph = new Map();
 
+    
+
     for (const stops of tripStops.values()) {
         for (let i = 0; i< stops.length - 1; i++) {
 
@@ -64,10 +89,18 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
             const from =current.stop_id;
             const to =next.stop_id;
 
+            // const routeId = tripMap.get(current.trip_id);
+            // // const line = routeMap.get(routeId);
+            // const line = getLineName(routeMap.get(routeId));
+            // const stationName= stationMap.get(to).name;
+
             const routeId = tripMap.get(current.trip_id);
-            // const line = routeMap.get(routeId);
-            const line = getLineName(routeMap.get(routeId));
-            const stationName= stationMap.get(to).name;
+            const route = routeMap.get(routeId);
+            const line = getLineName(route.longName);
+            const service = getServiceName(route.shortName);
+            const stationName = stationMap.get(to).name;
+
+
 
             if(!graph.has(from)){
                 graph.set(from, []);
@@ -80,11 +113,17 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
             //forwrd edge
             const fromEdges = graph.get(from);
 
-            if (!fromEdges.some(edge => edge.to === to && edge.line === line)) {
+            if (!fromEdges.some(
+                edge =>
+                    edge.to === to &&
+                    edge.line === line &&
+                    edge.service === service
+            )) {
                 fromEdges.push({
                     to,
                     station: stationName,
                     line,
+                    service,
                     weight: 1,
                 });
             }
@@ -92,11 +131,17 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
             //reverse edge
             const toEdges = graph.get(to);
 
-            if (!toEdges.some(edge => edge.to === from && edge.line === line)) {
+            if (!toEdges.some(
+                edge =>
+                    edge.to === from &&
+                    edge.line === line &&
+                    edge.service === service
+            )) {
                 toEdges.push({
                     to: from,
                     station: stationMap.get(from).name,
                     line,
+                    service,
                     weight: 1,
                 });
             }
@@ -105,6 +150,7 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
 
     return graph;
 }
+
 
 function getLineName(routeName) {
 
@@ -120,5 +166,18 @@ function getLineName(routeName) {
     if (routeName.startsWith("RAPID")) return "Rapid Metro";
 
     return routeName;
+}
+
+function getServiceName(routeShortName) {
+
+    if (routeShortName === "B_DN" || routeShortName === "B_DN_R") {
+        return "Blue Main";
+    }
+
+    if (routeShortName === "B_DV" || routeShortName === "B_DV_R") {
+        return "Blue Vaishali Branch";
+    }
+
+    return null;
 }
 module.exports = {createStationMap,createRouteMap,createTripMap,groupStopsByTrip,sortTripStops,buildGraph};

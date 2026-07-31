@@ -37,18 +37,50 @@ async function start(){
         sortTripStops(tripStops);
         // const graph = buildGraph(tripStops, tripMap, routeMap);
          graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
+        console.log("YAMUNA BANK:", stationMap.get("89"));
+        // console.log("YAMUNA BANK EDGES:", graph.get("89"));
+        // console.log(
+        //     "YAMUNA BANK SERVICE EDGES:",
+        //     graph.get("89").map(edge => ({
+        //         to: edge.to,
+        //         station: edge.station,
+        //         line: edge.line,
+        //         service: edge.service
+        //     }))
+        // );
+        // console.log("\n--- BLUE SERVICE TEST ---");
+
+// let blueMainCount = 0;
+// let blueVaishaliCount = 0;
+
+// for (const [stationId, edges] of graph) {
+//     for (const edge of edges) {
+
+//         if (edge.service === "Blue Main") {
+//             blueMainCount++;
+//         }
+
+//         if (edge.service === "Blue Vaishali Branch") {
+//             blueVaishaliCount++;
+//         }
+//     }
+// }
+
+// console.log("Blue Main edges:", blueMainCount);
+// console.log("Blue Vaishali Branch edges:", blueVaishaliCount);
+
 
         patchNetwork(graph,stationMap);
 
-        stationMap.forEach(station => {
-        if( station.name === "Majlis Park" ||
-            station.name === "Maujpur - Babarpur" ||
-            station.name === "Janak Puri West"  ||
-            station.name === "Haiderpur Badli Mor"
-        ){
-            console.log(station);
-        }
-        });
+        // stationMap.forEach(station => {
+        // if( station.name === "Majlis Park" ||
+        //     station.name === "Maujpur - Babarpur" ||
+        //     station.name === "Janak Puri West"  ||
+        //     station.name === "Haiderpur Badli Mor"
+        // ){
+        //     console.log(station);
+        // }
+        // });
 
         //testing dikstra
         // const result = findShortestPath(graph, "21", "1");
@@ -75,7 +107,7 @@ async function start(){
         console.log(tripMap.get(trips[0].trip_id));
         console.log(trips[0]);
         console.log("Trips grouped:", tripStops.size);
-        console.log(tripStops.get("0").slice(0, 5));
+        // console.log(tripStops.get("0").slice(0, 5));
         // console.log(tripStops.get("0").slice(0, 5));
         console.log("Graph Size:", graph.size);
         console.log(graph.get("21"));
@@ -88,7 +120,15 @@ async function start(){
         // console.log("destination-",stationMap.get("60").name);
 
         console.log("Route:", result.path);
-        
+
+
+        // console.log(
+        //     result.path.map(step => ({
+        //         station: stationMap.get(step.station).name,
+        //         line: step.line,
+        //         service: step.service
+        //     }))
+        // );
         
 
         // console.log(graph.get("173")); // Majlis Park
@@ -162,6 +202,7 @@ app.post("/api/route", (req, res)=>{
 
     console.log("Route:", result.path);
     console.log("Distance:", result.distance);
+
 
     // res.json({
     //     source,

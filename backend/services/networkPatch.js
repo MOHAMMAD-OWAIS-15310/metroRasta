@@ -35,6 +35,32 @@ function connectStations(graph , stationMap, from,to, line) {
     }
 }
 
+function markShivViharBranch(graph) {
+    const branchEdges = [
+        ["215", "216"], 
+        ["216", "217"], 
+        ["217", "218"]  
+    ];
+
+    for (const [from, to] of branchEdges) {
+
+        // forward edge
+        const forwardEdges = graph.get(from) || [];
+        for (const edge of forwardEdges) {
+            if (edge.to === to && edge.line === "Pink Line") {
+                edge.service = "Pink Shiv Vihar";
+            }
+        }
+
+        // reverse edge
+        const reverseEdges = graph.get(to) || [];
+        for (const edge of reverseEdges) {
+            if (edge.to === from && edge.line === "Pink Line") {
+                edge.service = "Pink Shiv Vihar";
+            }
+        }
+    }
+}
 
 function patchNetwork(graph, stationMap){
     // ........................................Pink Line Extension
@@ -86,7 +112,9 @@ function patchNetwork(graph, stationMap){
     connectStations(graph, stationMap, "532", "533", "Magenta Line");
     connectStations(graph, stationMap, "533", "38", "Magenta Line");   // Haiderpur Badli Mor
     connectStations(graph, stationMap, "38", "534", "Magenta Line");   // Bhalaswa
-    connectStations(graph, stationMap, "534", "173", "Magenta Line");  // Majlis Park
+    connectStations(graph, stationMap, "534", "173", "Magenta Line"); // Majlis Park
+
+    markShivViharBranch(graph);
 }
 
 module.exports = { patchNetwork };
