@@ -36,7 +36,8 @@ function createRouteMap(routes) {
     // );
     //testing
     for (const route of routes) {
-    if (route.route_long_name.startsWith("PINK")) {
+    // if (route.route_long_name.startsWith("PINK")) {
+    if (route.route_long_name.startsWith("GREEN")) {
         console.log(route.route_short_name, route.route_long_name);
     }
     }
@@ -176,6 +177,14 @@ function getServiceName(routeShortName) {
 
     if (routeShortName === "B_DV" || routeShortName === "B_DV_R") {
         return "Blue Vaishali Branch";
+    }
+
+    if (routeShortName === "G_IB" || routeShortName === "G_IB_R") {
+        return "Green Main";
+    }
+
+    if (routeShortName === "G_KB" || routeShortName === "G_KB_R") {
+        return "Green Kirti Nagar Branch";
     }
 
     return null;

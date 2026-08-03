@@ -7,7 +7,7 @@ function addStation(stationMap, id, name) {
     });
 }
 
-function connectStations(graph , stationMap, from,to, line) {
+function connectStations(graph , stationMap, from,to, line, service = null) {
 
     if(!graph.has(from)) graph.set(from, []);
     if(!graph.has(to)) graph.set(to, []);
@@ -19,6 +19,7 @@ function connectStations(graph , stationMap, from,to, line) {
             to,
             station: stationMap.get(to).name,
             line,
+            service,
             weight: 1
         });
     }
@@ -30,6 +31,7 @@ function connectStations(graph , stationMap, from,to, line) {
             to: from,
             station: stationMap.get(from).name,
             line,
+            service,
             weight: 1
         });
     }

@@ -1,5 +1,6 @@
 const INTERCHANGE_PENALTY = 6;
 const YAMUNA_BANK_ID = "89";
+const ASHOK_PARK_MAIN_ID = "34";
 
 function findShortestPath(graph, start  , destination){
     const distances = new Map();
@@ -72,6 +73,15 @@ function findShortestPath(graph, start  , destination){
             ) {
                 continue;
             }
+            //.....green line t branch 
+            if (
+                currentLine === "Green Line" &&
+                edge.line === "Green Line" &&
+                currentService !== edge.service &&
+                currentStation !== ASHOK_PARK_MAIN_ID
+            ) {
+                continue;
+            }
 
             let newDistance =
                 distances.get(currentState) + edge.weight;
@@ -90,6 +100,16 @@ function findShortestPath(graph, start  , destination){
             ) {
                 newDistance += INTERCHANGE_PENALTY;
             }
+
+            //....green line branch change bas ashok park pr allow h
+            if (
+                currentLine === "Green Line" &&
+                edge.line === "Green Line" &&
+                currentService !== edge.service &&
+                currentStation === ASHOK_PARK_MAIN_ID
+            ) {
+                newDistance += INTERCHANGE_PENALTY;
+            }            
 
             // const nextState = stateKey(edge.to, edge.line);
             const nextState = stateKey(edge.to, edge.line, edge.service);
