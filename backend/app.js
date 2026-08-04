@@ -35,6 +35,24 @@ async function start(){
         const tripMap=createTripMap(trips);
         const tripStops = groupStopsByTrip(stopTimes);
         sortTripStops(tripStops);
+        // //.............rapid metro debug
+        // const duplicateStations = new Set();
+        // for (const [tripId, stops] of tripStops) {
+        //     for (let i = 0; i < stops.length - 1; i++) {
+
+        //         const a = stationMap.get(stops[i].stop_id);
+        //         const b = stationMap.get(stops[i + 1].stop_id);
+
+        //         const nameA = a.name.replace(" (Rapid Metro)", "");
+        //         const nameB = b.name.replace(" (Rapid Metro)", "");
+
+        //         if (nameA === nameB && a.id !== b.id) {
+        //             duplicateStations.add(`${nameA} (${a.id} -> ${b.id})`);
+        //         }
+        //     }
+        // }
+        // console.log([...duplicateStations]);
+
         // const graph = buildGraph(tripStops, tripMap, routeMap);
          graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
         console.log("YAMUNA BANK:", stationMap.get("89"));
@@ -71,6 +89,27 @@ async function start(){
 
 
         patchNetwork(graph,stationMap);
+
+        //.....rapid metro testing :bug
+        console.log(
+            "148:",
+            graph.get("148").map(edge => ({
+                to: edge.to,
+                station: stationMap.get(edge.to).name,
+                line: edge.line,
+                service: edge.service
+            }))
+        );
+
+        console.log(
+            "68:",
+            graph.get("68").map(edge => ({
+                to: edge.to,
+                station: stationMap.get(edge.to).name,
+                line: edge.line,
+                service: edge.service
+            }))
+        );
 
         // stationMap.forEach(station => {
         // if( station.name === "Majlis Park" ||

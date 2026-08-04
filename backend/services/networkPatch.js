@@ -63,6 +63,38 @@ function markShivViharBranch(graph) {
         }
     }
 }
+function markMagentaNorth(graph) {
+
+    const northEdges = [
+        ["530", "531"],
+        ["531", "532"],
+        ["532", "533"],
+        ["533", "38"],
+        ["38", "534"],
+        ["534", "173"]
+    ];
+
+    for (const [from, to] of northEdges) {
+
+        // Forward: Deepali - Majlis Park
+        const forwardEdges = graph.get(from) || [];
+
+        for (const edge of forwardEdges) {
+            if (edge.to === to && edge.line === "Magenta Line") {
+                edge.service = "Magenta Majlis Park";
+            }
+        }
+
+        // Reverse: Majlis Park - Deepali
+        const reverseEdges = graph.get(to) || [];
+
+        for (const edge of reverseEdges) {
+            if (edge.to === from && edge.line === "Magenta Line") {
+                edge.service = "Magenta Deepali Chowk";
+            }
+        }
+    }
+}
 
 function patchNetwork(graph, stationMap){
     // ........................................Pink Line Extension
@@ -104,7 +136,7 @@ function patchNetwork(graph, stationMap){
 
     // ......................Section 1
     // Janak Puri West -> Krishna Park Extension
-    connectStations(graph, stationMap, "108", "529", "Magenta Line");
+    connectStations(graph, stationMap, "108", "529", "Magenta Line","Magenta Botanical Garden");
 
 
     // ........................Section 2
@@ -117,6 +149,16 @@ function patchNetwork(graph, stationMap){
     connectStations(graph, stationMap, "534", "173", "Magenta Line"); // Majlis Park
 
     markShivViharBranch(graph);
+    markMagentaNorth(graph);
+
+    // .. rapid metro gftss fix
+    connectStations(
+        graph,
+        stationMap,
+        "148",   
+        "168", 
+        "Rapid Metro"
+    );
 }
 
 module.exports = { patchNetwork };

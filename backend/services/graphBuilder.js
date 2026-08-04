@@ -13,13 +13,7 @@ function createStationMap(stops){
     return stationMap;
 }
 
-// function createRouteMap(routes) {
-//     const routeMap = new Map();
-//     for(const route of routes){
-//         routeMap.set(route.route_id,  route.route_long_name);
-//     }
-//     return routeMap;
-// }
+
 
 function createRouteMap(routes) {
     const routeMap = new Map();
@@ -37,7 +31,9 @@ function createRouteMap(routes) {
     //testing
     for (const route of routes) {
     // if (route.route_long_name.startsWith("PINK")) {
-    if (route.route_long_name.startsWith("GREEN")) {
+    // if (route.route_long_name.startsWith("GREEN")) {
+    // if (route.route_long_name.startsWith("MAGENTA")) {
+    if (route.route_long_name.startsWith("RAPID")) {
         console.log(route.route_short_name, route.route_long_name);
     }
     }
@@ -86,6 +82,16 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
 
             const current=stops[i];
             const next =stops[i + 1];
+
+            const currentName = stationMap.get(current.stop_id).name;
+            const nextName = stationMap.get(next.stop_id).name;
+            //skip fake rapid metrointerchange edge (fixing bug after testing)
+            if(
+                (current.stop_id === "148" && next.stop_id === "68") ||
+                (current.stop_id === "68" && next.stop_id === "148")
+            ) {
+                continue;
+            }
 
             const from =current.stop_id;
             const to =next.stop_id;
@@ -174,17 +180,23 @@ function getServiceName(routeShortName) {
     if (routeShortName === "B_DN" || routeShortName === "B_DN_R") {
         return "Blue Main";
     }
-
     if (routeShortName === "B_DV" || routeShortName === "B_DV_R") {
         return "Blue Vaishali Branch";
     }
-
-    if (routeShortName === "G_IB" || routeShortName === "G_IB_R") {
+    //........greeen
+    if(routeShortName === "G_IB" || routeShortName === "G_IB_R"){
         return "Green Main";
     }
-
-    if (routeShortName === "G_KB" || routeShortName === "G_KB_R") {
+    if (routeShortName === "G_KB" || routeShortName === "G_KB_R"){
         return "Green Kirti Nagar Branch";
+    }
+
+    //.....magenta
+    if(routeShortName === "M_JB") {
+        return "Magenta Botanical Garden";
+    }
+    if(routeShortName === "M_JB_R") {
+        return "Magenta Janak Puri West";
     }
 
     return null;
