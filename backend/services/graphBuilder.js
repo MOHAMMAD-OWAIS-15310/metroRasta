@@ -171,6 +171,7 @@ function getLineName(routeName) {
     if (routeName.startsWith("ORANGE")) return "Airport Express";
     if (routeName.startsWith("GREY")) return "Grey Line";
     if (routeName.startsWith("RAPID")) return "Rapid Metro";
+    if (routeName.startsWith("AQUA")) return "Aqua Line";
 
     return routeName;
 }

@@ -148,6 +148,10 @@ function patchNetwork(graph, stationMap){
     connectStations(graph, stationMap, "38", "534", "Magenta Line");   // Bhalaswa
     connectStations(graph, stationMap, "534", "173", "Magenta Line"); // Majlis Park
 
+
+    //........noida sect 52(blue) to noida sect 51(aqua) have pedestrian walk
+    connectStations(graph,stationMap,"234","500","Walking","Pedestrian Transfer");
+
     markShivViharBranch(graph);
     markMagentaNorth(graph);
 
