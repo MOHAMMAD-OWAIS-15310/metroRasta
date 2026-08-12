@@ -1,3 +1,6 @@
+const { lineEndpoints } = require("./lineEndpoints");
+
+
 function createStationMap(stops){
     const stationMap =new Map();
 
@@ -72,10 +75,187 @@ function sortTripStops(tripStops){
 
     return tripStops;
 }
-function buildGraph(tripStops, tripMap, routeMap, stationMap) {
-    const graph = new Map();
+
+//.........working on towards
+function createLineSequences(
+    tripStops,
+    tripMap,
+    routeMap,
+    stationMap
+) {
+    const lineSequences = new Map();
+    for (const stops of tripStops.values()) {
+        if (stops.length < 2) continue;
+
+        const firstStop = stops[0];
+        const lastStop = stops[stops.length - 1];
+
+        const routeId = tripMap.get(firstStop.trip_id);
+        const route = routeMap.get(routeId);
+
+        if (!route) continue;
+
+        const line = getLineName(route.longName);
+        const service = getServiceName(route.shortName);
+
+        const key = `${line}|${service}`;
 
     
+          const endpoints = lineEndpoints[key];
+
+        if(!endpoints) continue;
+
+        const firstName =
+            stationMap.get(firstStop.stop_id).name;
+
+        const lastName =
+            stationMap.get(lastStop.stop_id).name;
+
+        if (firstName === endpoints.from && lastName === endpoints.to) {
+            lineSequences.set(
+                key,
+                stops.map(stop => stop.stop_id)
+            );
+        }
+    }
+    console.log("..........................LINE SEQUENCES:");
+    console.log(lineSequences);
+
+    // console.log(
+    // "AQUA SEQUENCE:",
+    // lineSequences.get("Aqua Line|null")
+// );
+    return lineSequences;
+}
+
+
+function addTowardsToPath(path, lineSequences, lineEndpoints) {
+
+    for(let i = 0; i < path.length; i++){
+
+        const current = path[i];
+
+        // START station
+        if (current.line === "START") {
+            current.towards = null;
+            continue;
+        }
+
+        const key = `${current.line}|${current.service}`;
+
+        const sequence = lineSequences.get(key);
+        const endpoints = lineEndpoints[key];
+
+        if(!sequence || !endpoints){
+            current.towards = null;
+            continue;
+        }
+
+        const currentIndex = sequence.indexOf(current.station);
+
+        if (currentIndex === -1) {
+            current.towards = null;
+            continue;
+        }
+
+        // ..........
+        // ........last sation /destination
+        if (i === path.length - 1) {
+
+            const previous = path[i - 1];
+
+            const previousIndex = sequence.indexOf(previous.station);
+
+            if (previousIndex === -1) {
+                current.towards = null;
+                continue;
+            }
+
+            if (currentIndex > previousIndex) {
+                current.towards = endpoints.to;
+            }
+            else if (currentIndex < previousIndex) {
+                current.towards = endpoints.from;
+            }
+            else {
+                current.towards = null;
+            }
+
+            continue;
+        }
+
+        const next = path[i + 1];
+
+
+        // ................NORMAL CASE
+        // Same line + same service
+        if (
+            current.line === next.line &&
+            current.service === next.service
+        ) {
+
+            const nextIndex = sequence.indexOf(next.station);
+
+            if (nextIndex === -1) {
+                current.towards = null;
+                continue;
+            }
+
+            if (nextIndex > currentIndex) {
+                current.towards = endpoints.to;
+            }
+            else if (nextIndex < currentIndex) {
+                current.towards = endpoints.from;
+            }
+            else {
+                current.towards = null;
+            }
+
+            continue;
+        }
+
+
+        // ..................INTERCHANGE CASE
+        //....eg (get this prob while testing)
+        // 13 (Red)  34 (green main) 35 (green branch)
+        // At 34, next station belongs to another service.
+        // So determine Green Main direction using:
+        //
+        // previous station->current station
+        // inside Green mains sequence.
+
+        const previous = path[i - 1];
+
+        if(previous) {
+
+            const previousIndex = sequence.indexOf(previous.station);
+
+            if (previousIndex !== -1) {
+
+                if (currentIndex > previousIndex) {
+                    current.towards = endpoints.to;
+                }
+                else if (currentIndex < previousIndex) {
+                    current.towards = endpoints.from;
+                }
+                else {
+                    current.towards = null;
+                }
+
+                continue;
+            }
+        }
+
+        // Could not determine direction
+        current.towards = null;
+    }
+
+    return path;
+}
+
+
+function buildGraph(tripStops, tripMap, routeMap, stationMap) {
+    const graph = new Map();
 
     for (const stops of tripStops.values()) {
         for (let i = 0; i< stops.length - 1; i++) {
@@ -202,4 +382,4 @@ function getServiceName(routeShortName) {
 
     return null;
 }
-module.exports = {createStationMap,createRouteMap,createTripMap,groupStopsByTrip,sortTripStops,buildGraph};
+module.exports = {createStationMap,createRouteMap,createTripMap,groupStopsByTrip,sortTripStops,buildGraph,createLineSequences,addTowardsToPath};

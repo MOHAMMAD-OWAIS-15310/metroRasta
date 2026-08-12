@@ -4,16 +4,19 @@ const path = require("path");
 
 let stationMap;
 let graph;
+let lineSequences;
 
 const app = express();
 const {loadFile }=require("./services/metroLoader");
 const {createStationMap } =require("./services/graphBuilder");
 const {createRouteMap } =require("./services/graphBuilder");
 const {createTripMap } =require("./services/graphBuilder");
-const {groupStopsByTrip,sortTripStops,buildGraph } =require("./services/graphBuilder");
+const {groupStopsByTrip,sortTripStops,buildGraph,createLineSequences,addTowardsToPath } =require("./services/graphBuilder");
 
 const {findShortestPath} = require("./services/dijkstra");
 const { patchNetwork } = require("./services/networkPatch");
+
+const {lineEndpoints} = require("./services/lineEndpoints");
 
 app.use(cors());
 app.use(express.json());
@@ -35,57 +38,22 @@ async function start(){
         const tripMap=createTripMap(trips);
         const tripStops = groupStopsByTrip(stopTimes);
         sortTripStops(tripStops);
-        // //.............rapid metro debug
-        // const duplicateStations = new Set();
-        // for (const [tripId, stops] of tripStops) {
-        //     for (let i = 0; i < stops.length - 1; i++) {
+        
+        //...............towards 
+         lineSequences = createLineSequences(
+            tripStops,
+            tripMap,
+            routeMap,
+            stationMap
+        );
 
-        //         const a = stationMap.get(stops[i].stop_id);
-        //         const b = stationMap.get(stops[i + 1].stop_id);
-
-        //         const nameA = a.name.replace(" (Rapid Metro)", "");
-        //         const nameB = b.name.replace(" (Rapid Metro)", "");
-
-        //         if (nameA === nameB && a.id !== b.id) {
-        //             duplicateStations.add(`${nameA} (${a.id} -> ${b.id})`);
-        //         }
-        //     }
-        // }
-        // console.log([...duplicateStations]);
+        // console.log("LINE SEQUENCES:");
+        // console.log(lineSequences);
 
         // const graph = buildGraph(tripStops, tripMap, routeMap);
          graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
         console.log("YAMUNA BANK:", stationMap.get("89"));
-        // console.log("YAMUNA BANK EDGES:", graph.get("89"));
-        // console.log(
-        //     "YAMUNA BANK SERVICE EDGES:",
-        //     graph.get("89").map(edge => ({
-        //         to: edge.to,
-        //         station: edge.station,
-        //         line: edge.line,
-        //         service: edge.service
-        //     }))
-        // );
-        // console.log("\n--- BLUE SERVICE TEST ---");
-
-// let blueMainCount = 0;
-// let blueVaishaliCount = 0;
-
-// for (const [stationId, edges] of graph) {
-//     for (const edge of edges) {
-
-//         if (edge.service === "Blue Main") {
-//             blueMainCount++;
-//         }
-
-//         if (edge.service === "Blue Vaishali Branch") {
-//             blueVaishaliCount++;
-//         }
-//     }
-// }
-
-// console.log("Blue Main edges:", blueMainCount);
-// console.log("Blue Vaishali Branch edges:", blueVaishaliCount);
+        
 
 
         patchNetwork(graph,stationMap);
@@ -111,15 +79,7 @@ async function start(){
             }))
         );
 
-        // stationMap.forEach(station => {
-        // if( station.name === "Majlis Park" ||
-        //     station.name === "Maujpur - Babarpur" ||
-        //     station.name === "Janak Puri West"  ||
-        //     station.name === "Haiderpur Badli Mor"
-        // ){
-        //     console.log(station);
-        // }
-        // });
+       
 
         //testing dikstra
         // const result = findShortestPath(graph, "21", "1");
@@ -161,23 +121,7 @@ async function start(){
         console.log("Route:", result.path);
 
 
-        // console.log(
-        //     result.path.map(step => ({
-        //         station: stationMap.get(step.station).name,
-        //         line: step.line,
-        //         service: step.service
-        //     }))
-        // );
-        
 
-        // console.log(graph.get("173")); // Majlis Park
-        // console.log(graph.get("521")); // Burari
-        
-
-        // console.log("Stops:", stops.length);
-        // console.log("Routes:", routes.length);
-        // console.log("Graph Size:", graph.size);
-        // console.log("station map size",stationMap.size);
     } catch(err){
         console.error(err);
     }
@@ -197,23 +141,7 @@ function findStationId(stationMap, stationName) {
 
 start();
 
-// app.post("/api/route", (req, res) => {
 
-//     const { source, destination } = req.body;
-
-//     const start = findStationId(stationMap, source);
-//     const end = findStationId(stationMap, destination);
-
-//     console.log("Source ID:", start);
-//     console.log("Destination ID:", end);
-
-//     res.json({
-//         source,
-//         destination,
-//         start,
-//         end
-//     });
-// });
 
 app.post("/api/route", (req, res)=>{
 
@@ -238,17 +166,12 @@ app.post("/api/route", (req, res)=>{
             error: "No route found between these stations"
         });
     }
+    addTowardsToPath(result.path, lineSequences,lineEndpoints);
 
     console.log("Route:", result.path);
     console.log("Distance:", result.distance);
 
 
-    // res.json({
-    //     source,
-    //     destination,
-    //     distance: result.distance,
-    //     route: result.path
-    // });
 
     const route = result.path.map(step =>({
         id: step.station,
