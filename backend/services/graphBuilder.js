@@ -76,7 +76,60 @@ function sortTripStops(tripStops){
     return tripStops;
 }
 
-//.........working on towards
+// //.........working on towards
+// function createLineSequences(
+//     tripStops,
+//     tripMap,
+//     routeMap,
+//     stationMap
+// ) {
+//     const lineSequences = new Map();
+//     for (const stops of tripStops.values()) {
+//         if (stops.length < 2) continue;
+
+//         const firstStop = stops[0];
+//         const lastStop = stops[stops.length - 1];
+
+//         const routeId = tripMap.get(firstStop.trip_id);
+//         const route = routeMap.get(routeId);
+
+//         if (!route) continue;
+
+//         const line = getLineName(route.longName);
+//         const service = getServiceName(route.shortName);
+
+//         const key = `${line}|${service}`;
+
+    
+//           const endpoints = lineEndpoints[key];
+
+//         if(!endpoints) continue;
+
+//         const firstName =
+//             stationMap.get(firstStop.stop_id).name;
+
+//         const lastName =
+//             stationMap.get(lastStop.stop_id).name;
+
+//         if (firstName === endpoints.from && lastName === endpoints.to) {
+//             lineSequences.set(
+//                 key,
+//                 stops.map(stop => stop.stop_id)
+//             );
+//         }
+//     }
+//     console.log("..........................LINE SEQUENCES:");
+//     console.log(lineSequences);
+
+    
+
+//     // console.log(
+//     // "AQUA SEQUENCE:",
+//     // lineSequences.get("Aqua Line|null")
+// // );
+//     return lineSequences;
+// }
+
 function createLineSequences(
     tripStops,
     tripMap,
@@ -84,8 +137,11 @@ function createLineSequences(
     stationMap
 ) {
     const lineSequences = new Map();
+
+    // .................normal lines 
     for (const stops of tripStops.values()) {
-        if (stops.length < 2) continue;
+
+        if(stops.length < 2) continue;
 
         const firstStop = stops[0];
         const lastStop = stops[stops.length - 1];
@@ -93,17 +149,21 @@ function createLineSequences(
         const routeId = tripMap.get(firstStop.trip_id);
         const route = routeMap.get(routeId);
 
-        if (!route) continue;
+        if(!route) continue;
 
         const line = getLineName(route.longName);
         const service = getServiceName(route.shortName);
 
         const key = `${line}|${service}`;
 
-    
-          const endpoints = lineEndpoints[key];
+        // Aqua  will be handle neeche
+        if(line === "Aqua Line"){
+            continue;
+        }
 
-        if(!endpoints) continue;
+        const endpoints = lineEndpoints[key];
+
+        if (!endpoints) continue;
 
         const firstName =
             stationMap.get(firstStop.stop_id).name;
@@ -111,20 +171,110 @@ function createLineSequences(
         const lastName =
             stationMap.get(lastStop.stop_id).name;
 
-        if (firstName === endpoints.from && lastName === endpoints.to) {
+        if(firstName === endpoints.from && lastName === endpoints.to){
             lineSequences.set(
                 key,
                 stops.map(stop => stop.stop_id)
             );
         }
     }
-    console.log("..........................LINE SEQUENCES:");
+
+
+
+    // ...............................aqua line
+
+    let aquaForward = null;
+    let aquaDepotTo142 = null;
+
+    for(const stops of tripStops.values()){
+
+        if(stops.length < 2) continue;
+
+        const firstStop = stops[0];
+        const lastStop = stops[stops.length - 1];
+
+        const routeId = tripMap.get(firstStop.trip_id);
+        const route = routeMap.get(routeId);
+
+        if(!route) continue;
+
+        if(getLineName(route.longName) !== "Aqua Line") {
+            continue;
+        }
+
+        const names = stops.map(
+            stop => stationMap.get(stop.stop_id).name
+        );
+
+        const first = names[0];
+        const last = names[names.length - 1];
+
+        // 51 - 142
+        if(first === "Noida Sector 51" && last === "Noida Sector 142"){
+            aquaForward = stops.map(stop => stop.stop_id);
+        }
+
+        // depot - 142
+        if(first === "Depot Station" && last === "Noida Sector 142") {
+            aquaDepotTo142 = stops.map(stop => stop.stop_id);
+        }
+    }
+
+
+    // ......................COMBINE AQUA TRIPS
+
+    if (aquaForward && aquaDepotTo142) {
+        // Depot -> 142
+        // reverse it
+        // 142 -> Depot
+        const aqua142ToDepot = [...aquaDepotTo142].reverse();
+
+        // remove duplicate 142
+        aqua142ToDepot.shift();
+
+        // vomplete conceptual sequence:
+        // 51 > ... > 142 > ...... > Depot
+        const aquaSequence = [
+            ...aquaForward,
+            ...aqua142ToDepot
+        ];
+
+        lineSequences.set(
+            "Aqua Line|null",
+            aquaSequence
+        );
+
+        console.log(
+            "AQUA SEQUENCE:",
+            aquaSequence.map(
+                id => stationMap.get(id).name
+            )
+        );
+
+    }else{
+
+        console.log(
+            "AQUA SEQUENCE COULD NOT BE BUILT"
+        );
+
+        console.log(
+            "Forward trip:",
+            !!aquaForward
+        );
+
+        console.log(
+            "Depot -> 142 trip:",
+            !!aquaDepotTo142
+        );
+    }
+
+
+    console.log(
+        "..............................LINE SEQUENCES:"
+    );
+
     console.log(lineSequences);
 
-    // console.log(
-    // "AQUA SEQUENCE:",
-    // lineSequences.get("Aqua Line|null")
-// );
     return lineSequences;
 }
 
