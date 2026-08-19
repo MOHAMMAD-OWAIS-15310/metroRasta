@@ -6,15 +6,61 @@ function addStation(stationMap, id, name) {
         lon: null
     });
 }
+//............green line 176 isssue
+function insertPunjabiBaghWestIntoGreenSequence(lineSequences, service) {
 
-function connectStations(graph , stationMap, from,to, line, service = null) {
+    const key = `Green Line|${service}`;
+    const sequence = lineSequences.get(key);
 
-    if(!graph.has(from)) graph.set(from, []);
-    if(!graph.has(to)) graph.set(to, []);
+    if (!sequence) {
+        console.log(`Green sequence not found: ${key}`);
+        return;
+    }
 
-    const fromEdges= graph.get(from);
+    // Already inserted
+    if (sequence.includes("176")) {
+        return;
+    }
 
-    if (!fromEdges.some(edge => edge.to === to && edge.line === line)){
+    const index33 = sequence.indexOf("33");
+    const index32 = sequence.indexOf("32");
+
+    if (index33 === -1 || index32 === -1) {
+        console.log(
+            `Cannot insert 176 into ${key}: 33 or 32 missing`
+        );
+        return;
+    }
+
+    // 176 must physically lie between Punjabi Bagh (33)
+    // and Shivaji Park (32).
+
+    if (index33 < index32) {
+        sequence.splice(index32, 0, "176");
+    } else {
+        sequence.splice(index33, 0, "176");
+    }
+
+    console.log(
+        `${key}:`,
+        sequence
+    );
+}
+
+
+//.......new to handle green line issue
+function connectStations(graph, stationMap, from, to, line, service = null) {
+
+    if (!graph.has(from)) graph.set(from, []);
+    if (!graph.has(to)) graph.set(to, []);
+
+    const fromEdges = graph.get(from);
+
+    if (!fromEdges.some(edge =>
+        edge.to === to &&
+        edge.line === line &&
+        edge.service === service
+    )) {
         fromEdges.push({
             to,
             station: stationMap.get(to).name,
@@ -26,7 +72,11 @@ function connectStations(graph , stationMap, from,to, line, service = null) {
 
     const toEdges = graph.get(to);
 
-    if(!toEdges.some(edge => edge.to === from && edge.line === line)){
+    if (!toEdges.some(edge =>
+        edge.to === from &&
+        edge.line === line &&
+        edge.service === service
+    )) {
         toEdges.push({
             to: from,
             station: stationMap.get(from).name,
@@ -96,7 +146,198 @@ function markMagentaNorth(graph) {
     }
 }
 
-function patchNetwork(graph, stationMap){
+
+//............ working on pink towards feature 
+function createPinkCircularSequence(graph, stationMap) {
+
+    const startId = [...stationMap.entries()]
+        .find(([id, station]) => station.name === "Jafrabad")?.[0];
+
+    if (!startId) {
+        console.log("Jafrabad not found");
+        return [];
+    }
+
+    const sequence = [];
+    const visited = new Set();
+
+    let current = startId;
+
+    while (!visited.has(current)) {
+
+        visited.add(current);
+        sequence.push(current);
+
+        const edges = graph.get(current) || [];
+
+        const pinkEdges = edges.filter(
+            edge =>
+                edge.line === "Pink Line" &&
+                edge.service !== "Pink Shiv Vihar"
+        );
+
+        if (pinkEdges.length === 0) {
+            break;
+        }
+
+        // Don't go backwards to the station we just came from
+        const nextEdge = pinkEdges.find(
+            edge => !visited.has(edge.to)
+        );
+
+        if (!nextEdge) {
+            break;
+        }
+
+        current = nextEdge.to;
+    }
+
+    // console.log(
+    //     "PINK CIRCULAR SEQUENCE:",
+    //     sequence.map(id => stationMap.get(id)?.name)
+    // );
+
+    return sequence;
+}
+
+
+
+function patchNetwork(graph, stationMap,lineSequences){
+
+
+// ================= PUNJABI BAGH WEST (176) =================
+
+connectStations(
+    graph,
+    stationMap,
+    "32",
+    "176",
+    "Green Line",
+    "Green Main"
+);
+
+connectStations(
+    graph,
+    stationMap,
+    "176",
+    "33",
+    "Green Line",
+    "Green Main"
+);
+
+connectStations(
+    graph,
+    stationMap,
+    "32",
+    "176",
+    "Green Line",
+    "Green Kirti Nagar Branch"
+);
+
+connectStations(
+    graph,
+    stationMap,
+    "176",
+    "33",
+    "Green Line",
+    "Green Kirti Nagar Branch"
+);
+
+
+// Remove old direct 32 - 33 Green edges
+
+function removeGreenServiceEdge(graph, from, to, service) {
+
+    const edges = graph.get(from);
+
+    if (!edges) return;
+
+    graph.set(
+        from,
+        edges.filter(edge =>
+            !(
+                edge.to === to &&
+                edge.line === "Green Line" &&
+                edge.service === service
+            )
+        )
+    );
+}
+
+for (const service of [
+    "Green Main",
+    "Green Kirti Nagar Branch"
+]) {
+
+    removeGreenServiceEdge(
+        graph,
+        "32",
+        "33",
+        service
+    );
+
+    removeGreenServiceEdge(
+        graph,
+        "33",
+        "32",
+        service
+    );
+}
+
+
+// Insert 176 into BOTH Green sequences
+
+function insertPunjabiBaghWestIntoGreenSequence(
+    lineSequences,
+    service
+) {
+
+    const key = `Green Line|${service}`;
+
+    const sequence = lineSequences.get(key);
+
+    if (!sequence) {
+        console.log(`Sequence not found: ${key}`);
+        return;
+    }
+
+    if (sequence.includes("176")) {
+        return;
+    }
+
+    const index33 = sequence.indexOf("33");
+    const index32 = sequence.indexOf("32");
+
+    if (index33 === -1 || index32 === -1) {
+        console.log(
+            `Cannot insert 176 into ${key}`
+        );
+        return;
+    }
+
+    if (index33 < index32) {
+        sequence.splice(index32, 0, "176");
+    } else {
+        sequence.splice(index33, 0, "176");
+    }
+
+    console.log(
+        `${key} sequence:`,
+        sequence
+    );
+}
+
+insertPunjabiBaghWestIntoGreenSequence(
+    lineSequences,
+    "Green Main"
+);
+
+insertPunjabiBaghWestIntoGreenSequence(
+    lineSequences,
+    "Green Kirti Nagar Branch"
+);
+
+
     // ........................................Pink Line Extension
 
     // adding new stations
@@ -153,6 +394,10 @@ function patchNetwork(graph, stationMap){
     connectStations(graph,stationMap,"234","500","Walking","Pedestrian Transfer");
 
     markShivViharBranch(graph);
+
+    const pinkCircularSequence =
+    createPinkCircularSequence(graph, stationMap);
+    
     markMagentaNorth(graph);
 
     // .. rapid metro gftss fix
@@ -163,6 +408,10 @@ function patchNetwork(graph, stationMap){
         "168", 
         "Rapid Metro"
     );
+    return {
+        graph,
+        pinkCircularSequence
+    };
 }
 
 module.exports = { patchNetwork };

@@ -44,6 +44,8 @@ function createRouteMap(routes) {
     return routeMap;
 }
 
+
+
 function createTripMap(trips){
     const tripMap = new Map();
     for(const trip of trips) {
@@ -51,6 +53,9 @@ function createTripMap(trips){
     }
     return tripMap;
 }
+
+
+
 
 function groupStopsByTrip(stopTimes){
     const tripStops = new Map();
@@ -68,6 +73,9 @@ function groupStopsByTrip(stopTimes){
     return tripStops;
 }
 
+
+
+
 function sortTripStops(tripStops){
     for(const stops of tripStops.values()) {
         stops.sort((a, b) => Number(a.stop_sequence) - Number(b.stop_sequence));
@@ -76,59 +84,8 @@ function sortTripStops(tripStops){
     return tripStops;
 }
 
-// //.........working on towards
-// function createLineSequences(
-//     tripStops,
-//     tripMap,
-//     routeMap,
-//     stationMap
-// ) {
-//     const lineSequences = new Map();
-//     for (const stops of tripStops.values()) {
-//         if (stops.length < 2) continue;
 
-//         const firstStop = stops[0];
-//         const lastStop = stops[stops.length - 1];
 
-//         const routeId = tripMap.get(firstStop.trip_id);
-//         const route = routeMap.get(routeId);
-
-//         if (!route) continue;
-
-//         const line = getLineName(route.longName);
-//         const service = getServiceName(route.shortName);
-
-//         const key = `${line}|${service}`;
-
-    
-//           const endpoints = lineEndpoints[key];
-
-//         if(!endpoints) continue;
-
-//         const firstName =
-//             stationMap.get(firstStop.stop_id).name;
-
-//         const lastName =
-//             stationMap.get(lastStop.stop_id).name;
-
-//         if (firstName === endpoints.from && lastName === endpoints.to) {
-//             lineSequences.set(
-//                 key,
-//                 stops.map(stop => stop.stop_id)
-//             );
-//         }
-//     }
-//     console.log("..........................LINE SEQUENCES:");
-//     console.log(lineSequences);
-
-    
-
-//     // console.log(
-//     // "AQUA SEQUENCE:",
-//     // lineSequences.get("Aqua Line|null")
-// // );
-//     return lineSequences;
-// }
 
 function createLineSequences(
     tripStops,
@@ -244,12 +201,12 @@ function createLineSequences(
             aquaSequence
         );
 
-        console.log(
-            "AQUA SEQUENCE:",
-            aquaSequence.map(
-                id => stationMap.get(id).name
-            )
-        );
+        // console.log(
+        //     "AQUA SEQUENCE:",
+        //     aquaSequence.map(
+        //         id => stationMap.get(id).name
+        //     )
+        // );
 
     }else{
 
@@ -269,17 +226,80 @@ function createLineSequences(
     }
 
 
-    console.log(
-        "..............................LINE SEQUENCES:"
-    );
+    // console.log(
+    //     "..............................LINE SEQUENCES:"
+    // );
 
-    console.log(lineSequences);
+    // console.log(lineSequences);
 
     return lineSequences;
 }
 
 
-function addTowardsToPath(path, lineSequences, lineEndpoints) {
+
+
+
+
+function getPinkTowards(
+    sourceStation,
+    destinationStation,
+    pinkSequence,
+    stationMap
+) {
+    const n = pinkSequence.length;
+
+    const sourceIndex = pinkSequence.indexOf(sourceStation);
+    const destinationIndex = pinkSequence.indexOf(destinationStation);
+
+    if (sourceIndex === -1 || destinationIndex === -1) {
+        return null;
+    }
+
+    if (sourceIndex === destinationIndex) {
+        return null;
+    }
+
+    // Clockwise (+)
+    const clockwiseDistance =
+        (destinationIndex - sourceIndex + n) % n;
+
+    // Anti-clockwise (-)
+    const antiClockwiseDistance =
+        (sourceIndex - destinationIndex + n) % n;
+
+    let nextIndex;
+    let direction;
+
+    if (clockwiseDistance < antiClockwiseDistance) {
+
+        nextIndex = (sourceIndex + 1) % n;
+        direction = "+";
+
+    } else if (antiClockwiseDistance < clockwiseDistance) {
+
+        nextIndex = (sourceIndex - 1 + n) % n;
+        direction = "-";
+
+    } else {
+
+        return null;
+    }
+
+    const nextStationId = pinkSequence[nextIndex];
+    const nextStation = stationMap.get(nextStationId);
+
+    if (!nextStation) {
+        return null;
+    }
+
+    return `${nextStation.name} (${direction})`;
+}
+
+
+
+
+
+function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequence,stationMap) {
 
     for(let i = 0; i < path.length; i++){
 
@@ -291,6 +311,60 @@ function addTowardsToPath(path, lineSequences, lineEndpoints) {
             continue;
         }
 
+
+    // ================= PINK CIRCULAR LINE =================
+    if (current.line === "Pink Line") {
+
+        // START is handled above
+        if (i === 0) {
+            current.towards = null;
+            continue;
+        }
+
+        const currentIndex =
+            pinkCircularSequence.indexOf(current.station);
+
+        if (currentIndex === -1) {
+            current.towards = null;
+            continue;
+        }
+
+        // Determine direction using the next Pink station
+        if (i < path.length - 1) {
+
+            const next = path[i + 1];
+
+            if (next.line === "Pink Line") {
+
+                const nextIndex =
+                    pinkCircularSequence.indexOf(next.station);
+
+                const n = pinkCircularSequence.length;
+                const clockwise =
+                    (nextIndex - currentIndex + n) % n;
+
+                const anticlockwise =
+                    (currentIndex - nextIndex + n) % n;
+                if (clockwise === 1) {
+                    current.towards =
+                        `${stationMap.get(current.station).name} (+)`;
+                }
+                else if (anticlockwise === 1) {
+                    current.towards =
+                        `${stationMap.get(current.station).name} (-)`;
+                }
+                else {
+                    current.towards = null;
+                }
+
+                continue;
+            }
+        }
+
+        // Last Pink station
+        current.towards = `${stationMap.get(current.station).name}`;
+        continue;
+    }
         const key = `${current.line}|${current.service}`;
 
         const sequence = lineSequences.get(key);
@@ -344,24 +418,94 @@ function addTowardsToPath(path, lineSequences, lineEndpoints) {
             current.service === next.service
         ) {
 
-            const nextIndex = sequence.indexOf(next.station);
+        let nextIndex = sequence.indexOf(next.station);
 
-            if (nextIndex === -1) {
-                current.towards = null;
+            // if (nextIndex === -1) {
+            //     current.towards = null;
+            //     continue;
+            // }
+
+            // if (nextIndex > currentIndex) {
+            //     current.towards = endpoints.to;
+            // }
+            // else if (nextIndex < currentIndex) {
+            //     current.towards = endpoints.from;
+            // }
+            // else {
+            //     current.towards = null;
+            // }
+
+            //........
+            // let nextIndex = sequence.indexOf(next.station);
+
+        //.........................................
+        // Punjabi Bagh West is not present in the original GTFS
+        // Green sequence, so give it a virtual position between
+        // Punjabi Bagh (33) and Shivaji Park (32).
+
+        if (
+            current.line === "Green Line" &&
+            current.station === "33" &&
+            next.station === "176"
+        ) {
+            const index33 = sequence.indexOf("33");
+            const index32 = sequence.indexOf("32");
+
+            if (index33 !== -1 && index32 !== -1) {
+                nextIndex = (index33 + index32) / 2;
+            }
+        }
+
+        else if (
+            current.line === "Green Line" &&
+            current.station === "176"
+        ) {
+            const index33 = sequence.indexOf("33");
+            const index32 = sequence.indexOf("32");
+
+            if (index33 !== -1 && index32 !== -1) {
+                // 176 lies between 33 and 32.
+                const currentVirtualIndex =
+                    (index33 + index32) / 2;
+
+                if (next.station === "32") {
+                    nextIndex = index32;
+                }
+                else if (next.station === "33") {
+                    nextIndex = index33;
+                }
+
+                if (nextIndex > currentVirtualIndex) {
+                    current.towards = endpoints.to;
+                }
+                else if (nextIndex < currentVirtualIndex) {
+                    current.towards = endpoints.from;
+                }
+                else {
+                    current.towards = null;
+                }
+
                 continue;
             }
+        }
 
-            if (nextIndex > currentIndex) {
-                current.towards = endpoints.to;
-            }
-            else if (nextIndex < currentIndex) {
-                current.towards = endpoints.from;
-            }
-            else {
-                current.towards = null;
-            }
-
+        if (nextIndex === -1) {
+            current.towards = null;
             continue;
+        }
+
+        if (nextIndex > currentIndex) {
+            current.towards = endpoints.to;
+        }
+        else if (nextIndex < currentIndex) {
+            current.towards = endpoints.from;
+        }
+        else {
+            current.towards = null;
+        }
+
+        continue;
+
         }
 
 
@@ -402,6 +546,11 @@ function addTowardsToPath(path, lineSequences, lineEndpoints) {
 
     return path;
 }
+
+
+
+
+
 
 
 function buildGraph(tripStops, tripMap, routeMap, stationMap) {
@@ -489,6 +638,10 @@ function buildGraph(tripStops, tripMap, routeMap, stationMap) {
 }
 
 
+
+
+
+
 function getLineName(routeName) {
 
     if (routeName.startsWith("RED")) return "Red Line";
@@ -505,6 +658,10 @@ function getLineName(routeName) {
 
     return routeName;
 }
+
+
+
+
 
 function getServiceName(routeShortName) {
 

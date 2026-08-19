@@ -5,6 +5,7 @@ const path = require("path");
 let stationMap;
 let graph;
 let lineSequences;
+let pinkCircularSequence;
 
 const app = express();
 const {loadFile }=require("./services/metroLoader");
@@ -39,6 +40,22 @@ async function start(){
         const tripStops = groupStopsByTrip(stopTimes);
         sortTripStops(tripStops);
         
+
+// // TEST: Does GTFS contain Punjabi Bagh West (176)
+// // in Green Line trips?
+// for (const stops of tripStops.values()) {
+//     if (!stops.some(stop => stop.stop_id === "176")) continue;
+
+//     const routeId = tripMap.get(stops[0].trip_id);
+//     const route = routeMap.get(routeId);
+
+//     console.log(
+//         "176:",
+//         route?.shortName,
+//         route?.longName
+//     );
+// }
+
         //...............towards 
          lineSequences = createLineSequences(
             tripStops,
@@ -52,32 +69,64 @@ async function start(){
 
         // const graph = buildGraph(tripStops, tripMap, routeMap);
          graph = buildGraph(tripStops, tripMap, routeMap, stationMap);
-        console.log("YAMUNA BANK:", stationMap.get("89"));
+        // console.log("YAMUNA BANK:", stationMap.get("89"));
         
 
+        // patchNetwork(graph,stationMap);
+        const patched = patchNetwork(graph, stationMap,lineSequences);
 
-        patchNetwork(graph,stationMap);
+//         console.log(
+//     "PUNJABI BAGH WEST:",
+//     graph.get("176")?.map(e => ({
+//         to: e.to,
+//         station: stationMap.get(e.to)?.name,
+//         line: e.line,
+//         service: e.service
+//     }))
+// );
+//         console.log(
+//     "PUNJABI BAGH WEST green:",
+//     graph.get("33")?.map(e => ({
+//         to: e.to,
+//         station: stationMap.get(e.to)?.name,
+//         line: e.line,
+//         service: e.service
+//     }))
+// );
+// for (const [id, station] of stationMap) {
+//     if (station.name.toLowerCase().includes("punjabi bagh")) {
+//         console.log(id, station.name);
+//     }
+// }
+        pinkCircularSequence = patched.pinkCircularSequence;
 
-        //.....rapid metro testing :bug
+        
         console.log(
-            "148:",
-            graph.get("148").map(edge => ({
-                to: edge.to,
-                station: stationMap.get(edge.to).name,
-                line: edge.line,
-                service: edge.service
-            }))
-        );
+    "PINK FROM APP:",
+    pinkCircularSequence?.length,
+    pinkCircularSequence?.map(id => stationMap.get(id)?.name)
+);
 
-        console.log(
-            "68:",
-            graph.get("68").map(edge => ({
-                to: edge.to,
-                station: stationMap.get(edge.to).name,
-                line: edge.line,
-                service: edge.service
-            }))
-        );
+        // //.....rapid metro testing :bug
+        // console.log(
+        //     "148:",
+        //     graph.get("148").map(edge => ({
+        //         to: edge.to,
+        //         station: stationMap.get(edge.to).name,
+        //         line: edge.line,
+        //         service: edge.service
+        //     }))
+        // );
+
+        // console.log(
+        //     "68:",
+        //     graph.get("68").map(edge => ({
+        //         to: edge.to,
+        //         station: stationMap.get(edge.to).name,
+        //         line: edge.line,
+        //         service: edge.service
+        //     }))
+        // );
 
        
 
@@ -166,7 +215,7 @@ app.post("/api/route", (req, res)=>{
             error: "No route found between these stations"
         });
     }
-    addTowardsToPath(result.path, lineSequences,lineEndpoints);
+    addTowardsToPath(result.path, lineSequences,lineEndpoints,pinkCircularSequence,stationMap);
 
     console.log("Route:", result.path);
     console.log("Distance:", result.distance);
