@@ -54,6 +54,25 @@ const lineEndpoints = {
     "Magenta Line|Magenta Botanical Garden": {
         from: "Janak Puri West",
         to: "Botanical Garden"
+    },
+
+
+    // Pink Shiv Vihar Branch
+    "Pink Line|Pink Shiv Vihar": {
+        from: "Maujpur-Babarpur",
+        to: "Shiv Vihar"
+    },
+
+    // Magenta Deepali Chowk -> Majlis Park
+    "Magenta Line|Magenta Majlis Park": {
+        from: "Deepali Chowk",
+        to: "Majlis Park"
+    },
+
+    // Magenta Majlis Park -> Deepali Chowk
+    "Magenta Line|Magenta Deepali Chowk": {
+        from: "Majlis Park",
+        to: "Deepali Chowk"
     }
 
 };

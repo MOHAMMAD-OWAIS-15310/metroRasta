@@ -3,7 +3,6 @@ const { lineEndpoints } = require("./lineEndpoints");
 
 function createStationMap(stops){
     const stationMap =new Map();
-
     for(const stop of stops){
         stationMap.set(stop.stop_id,{
             id   : stop.stop_id,
@@ -12,7 +11,6 @@ function createStationMap(stops){
              lon: parseFloat(stop.stop_lon),
         });
     }
-
     return stationMap;
 }
 
@@ -20,7 +18,6 @@ function createStationMap(stops){
 
 function createRouteMap(routes) {
     const routeMap = new Map();
-
     for (const route of routes) {
         routeMap.set(route.route_id, {
             shortName: route.route_short_name,
@@ -40,7 +37,6 @@ function createRouteMap(routes) {
         console.log(route.route_short_name, route.route_long_name);
     }
     }
-
     return routeMap;
 }
 
@@ -59,10 +55,8 @@ function createTripMap(trips){
 
 function groupStopsByTrip(stopTimes){
     const tripStops = new Map();
-
     for(const stopTime of stopTimes){
         const tripId = stopTime.trip_id;
-
         if(!tripStops.has(tripId)){
             tripStops.set(tripId, []);
         }
@@ -300,6 +294,17 @@ function getPinkTowards(
 
 
 function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequence,stationMap) {
+    //........testing pink shiv vihar towards
+    // console.log(
+    //     "PINK SHIV VIHAR SEQUENCE:",
+    //     lineSequences.get("Pink Line|Pink Shiv Vihar")
+    // );
+
+    // console.log(
+    //     "PINK SHIV VIHAR ENDPOINTS:",
+    //     lineEndpoints["Pink Line|Pink Shiv Vihar"]
+    // );
+
 
     for(let i = 0; i < path.length; i++){
 
@@ -313,7 +318,7 @@ function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequenc
 
 
     // ================= PINK CIRCULAR LINE =================
-    if (current.line === "Pink Line") {
+    if (current.line === "Pink Line" && current.service !== "Pink Shiv Vihar") {
 
         // START is handled above
         if (i === 0) {
@@ -326,6 +331,33 @@ function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequenc
 
         if (currentIndex === -1) {
             current.towards = null;
+            continue;
+        }
+
+        //........jafrabad and yamuna vihar to shiv branch 
+        // Jafrabad / Yamuna Vihar - Maujpur-Babarpur - Shiv Vihar
+        // ONLY for:
+        // Jafrabad (214) - Shiv Vihar branch
+        // Yamuna Vihar (528) - Shiv Vihar branch
+        // its not for  when 214/528 merely appear somewhere in the middle of a journey.
+        if (
+            (path[0].station === "214" || path[0].station === "528") &&
+            current.station === "215" &&
+            i < path.length - 1 &&
+            path[i + 1].station === "216" &&
+            path[i + 1].service === "Pink Shiv Vihar"
+        ) {
+            const stationName =
+                stationMap.get(current.station).name;
+            if (path[0].station === "528") {
+                // Yamuna Vihar - Shiv Vihar
+                current.towards = `${stationName} (+)`;
+            }
+            else if (path[0].station === "214") {
+                // Jafrabad - Shiv Vihar
+                current.towards = `${stationName} (-)`;
+            }
+
             continue;
         }
 
@@ -360,12 +392,15 @@ function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequenc
                 continue;
             }
         }
+        
+        
 
         // Last Pink station
         current.towards = `${stationMap.get(current.station).name}`;
         continue;
     }
         const key = `${current.line}|${current.service}`;
+
 
         const sequence = lineSequences.get(key);
         const endpoints = lineEndpoints[key];
@@ -420,23 +455,6 @@ function addTowardsToPath(path, lineSequences, lineEndpoints,pinkCircularSequenc
 
         let nextIndex = sequence.indexOf(next.station);
 
-            // if (nextIndex === -1) {
-            //     current.towards = null;
-            //     continue;
-            // }
-
-            // if (nextIndex > currentIndex) {
-            //     current.towards = endpoints.to;
-            // }
-            // else if (nextIndex < currentIndex) {
-            //     current.towards = endpoints.from;
-            // }
-            // else {
-            //     current.towards = null;
-            // }
-
-            //........
-            // let nextIndex = sequence.indexOf(next.station);
 
         //.........................................
         // Punjabi Bagh West is not present in the original GTFS
