@@ -7,6 +7,7 @@ let graph;
 let lineSequences;
 let pinkCircularSequence;
 
+
 const app = express();
 const {loadFile }=require("./services/metroLoader");
 const {createStationMap } =require("./services/graphBuilder");
@@ -18,6 +19,11 @@ const {findShortestPath} = require("./services/dijkstra");
 const { patchNetwork } = require("./services/networkPatch");
 
 const {lineEndpoints} = require("./services/lineEndpoints");
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cors());
 app.use(express.json());
@@ -192,9 +198,10 @@ start();
 
 
 
-app.post("/api/route", (req, res)=>{
 
-    const {source, destination } = req.body;
+app.post("/route", (req, res) => {
+
+    const { source, destination } = req.body;
 
     const start = findStationId(stationMap, source);
     const end = findStationId(stationMap, destination);
@@ -215,47 +222,77 @@ app.post("/api/route", (req, res)=>{
             error: "No route found between these stations"
         });
     }
-    addTowardsToPath(result.path, lineSequences,lineEndpoints,pinkCircularSequence,stationMap);
+
+    addTowardsToPath(
+        result.path,
+        lineSequences,
+        lineEndpoints,
+        pinkCircularSequence,
+        stationMap
+    );
 
     console.log("Route:", result.path);
     console.log("Distance:", result.distance);
 
-
-
-    const route = result.path.map(step =>({
+    const route = result.path.map(step => ({
         id: step.station,
         name: stationMap.get(step.station).name,
-        line: step.line
+        line: step.line,
+        service: step.service,
+        towards: step.towards
     }));
 
+    // detect interchange when line OR srvice changes
     const interchanges = [];
 
-    for(let i = 1; i < route.length; i++){
+    for (let i = 1; i < route.length; i++) {
+
+        const previous = route[i - 1];
+        const current = route[i];
+
+        const lineChanged =
+            previous.line !== current.line;
+
+        const serviceChanged =
+            previous.service !== current.service;
+
         if (
-            route[i].line !== route[i - 1].line &&
-            route[i - 1].line !== "START"
+            (lineChanged || serviceChanged) &&
+            previous.line !== "START"
         ) {
             interchanges.push({
-                station: route[i].name,
-                from: route[i - 1].line,
-                to: route[i].line
+                station: previous.name,
+                from: previous.line,
+                to: current.line,
+                fromService: previous.service,
+                toService: current.service
             });
         }
     }
+
     const stationMoves = route.length - 1;
 
-    res.json({
+    // res.json({
+    //     source,
+    //     destination,
+    //     stationMoves,
+    //     interchanges,
+    //     cost: result.distance,
+    //     route
+    // });
+    res.render("route_path.ejs",{
         source,
         destination,
         stationMoves,
         interchanges,
         cost: result.distance,
-        route
+        route,
     });
 });
 
-app.get("/route", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+app.get("/index", (req, res) => {
+    // res.sendFile(path.join(__dirname, "../frontend/index.html"));
+    res.render("index.ejs");
 });
 
 app.get("/", (req, res) => {
