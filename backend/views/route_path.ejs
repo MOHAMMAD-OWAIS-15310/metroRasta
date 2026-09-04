@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,5 +12,78 @@
             <div><%=oneRoute.name%></div>
         <%}%>
     </div>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>MetroRasta</title>
+</head>
+<body>
+    <h1>MetroRasta</h1>
+    <h2>
+        <%= source %> → <%= destination %>
+    </h2>
+    <ol>
+        <% for (let instruction of instructions) { %>
+            <li>
+                <%= instruction %>
+            </li>
+        <% } %>
+    </ol>
+
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MetroRasta - Route</title>
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+
+<body>
+
+<header class="header">
+    <h1 class="site-name">MetroRasta</h1>
+</header>
+
+
+<main class="container">
+
+    <div class="route-card">
+        <h2 class="route-title">
+            <%= source %> <i class="fa-solid fa-arrow-right"></i> <%= destination %>
+        </h2>
+        <p class="route-summary">
+            Total stations = <%= stationMoves %> 
+        </p>
+        <ol class="instructions">
+            <% for (let instruction of instructions) { %>
+                <b><li></b>
+                    <%= instruction %>
+                </li>
+            <% } %>
+        </ol>
+
+        <a href="/index" class="back-btn">
+            < Go Back
+        </a>
+
+    </div>
+
+</main>
+
 </body>
 </html>

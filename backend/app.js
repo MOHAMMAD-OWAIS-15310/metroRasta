@@ -47,20 +47,7 @@ async function start(){
         sortTripStops(tripStops);
         
 
-// // TEST: Does GTFS contain Punjabi Bagh West (176)
-// // in Green Line trips?
-// for (const stops of tripStops.values()) {
-//     if (!stops.some(stop => stop.stop_id === "176")) continue;
 
-//     const routeId = tripMap.get(stops[0].trip_id);
-//     const route = routeMap.get(routeId);
-
-//     console.log(
-//         "176:",
-//         route?.shortName,
-//         route?.longName
-//     );
-// }
 
         //...............towards 
          lineSequences = createLineSequences(
@@ -81,29 +68,7 @@ async function start(){
         // patchNetwork(graph,stationMap);
         const patched = patchNetwork(graph, stationMap,lineSequences);
 
-//         console.log(
-//     "PUNJABI BAGH WEST:",
-//     graph.get("176")?.map(e => ({
-//         to: e.to,
-//         station: stationMap.get(e.to)?.name,
-//         line: e.line,
-//         service: e.service
-//     }))
-// );
-//         console.log(
-//     "PUNJABI BAGH WEST green:",
-//     graph.get("33")?.map(e => ({
-//         to: e.to,
-//         station: stationMap.get(e.to)?.name,
-//         line: e.line,
-//         service: e.service
-//     }))
-// );
-// for (const [id, station] of stationMap) {
-//     if (station.name.toLowerCase().includes("punjabi bagh")) {
-//         console.log(id, station.name);
-//     }
-// }
+
         pinkCircularSequence = patched.pinkCircularSequence;
 
         
@@ -113,26 +78,7 @@ async function start(){
     pinkCircularSequence?.map(id => stationMap.get(id)?.name)
 );
 
-        // //.....rapid metro testing :bug
-        // console.log(
-        //     "148:",
-        //     graph.get("148").map(edge => ({
-        //         to: edge.to,
-        //         station: stationMap.get(edge.to).name,
-        //         line: edge.line,
-        //         service: edge.service
-        //     }))
-        // );
 
-        // console.log(
-        //     "68:",
-        //     graph.get("68").map(edge => ({
-        //         to: edge.to,
-        //         station: stationMap.get(edge.to).name,
-        //         line: edge.line,
-        //         service: edge.service
-        //     }))
-        // );
 
        
 
@@ -196,7 +142,183 @@ function findStationId(stationMap, stationName) {
 
 start();
 
+// //..........working on natural language generation
+// function generateNaturalLanguage(route, interchanges) {
 
+//     const instructions = [];
+//     let currentIndex = 0;
+//     while (currentIndex < route.length - 1) {
+//         const currentStation = route[currentIndex];
+
+//         // Find the next interchange after current station
+//         let interchangeIndex = -1;
+
+//         for (let i = currentIndex + 1; i < route.length; i++) {
+//             const interchange = interchanges.find(
+//                 item => item.station === route[i].name
+//             );
+//             if (interchange) {
+//                 interchangeIndex = i;
+//                 break;
+//             }
+//         }
+
+//         // If no interchange, destination is the end
+//         const targetIndex =
+//             interchangeIndex !== -1
+//                 ? interchangeIndex
+//                 : route.length - 1;
+
+//         const targetStation = route[targetIndex];
+
+//         // First instruction: take the current line
+//         if (currentIndex === 0) {
+//             const firstStation = route[1];
+
+//             instructions.push(
+//                 `From ${currentStation.name}, take the ${firstStation.line} towards ${firstStation.towards}.`
+//             );
+
+//         }
+
+//         // Number of stations travelled
+//         const stationCount = targetIndex - currentIndex;
+
+//         instructions.push(
+//             `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
+//         );
+
+//         // If this is an interchange
+//         if (interchangeIndex !== -1) {
+//             const nextStation = route[interchangeIndex + 1];
+//             // instructions.push(
+//             //     `Change at ${targetStation.name} and take the ${nextStation.line} towards ${nextStation.towards}.`
+//             // );
+//             if (nextStation.line === "Walking") {
+//                 instructions.push(
+//                     `Walk from ${targetStation.name} to ${nextStation.name}.`
+//                 );
+//             } else{
+//                 instructions.push(
+//                     `Change at ${targetStation.name} and take the ${nextStation.line} towards ${nextStation.towards}.`
+//                 );
+//             }
+//             currentIndex = interchangeIndex;
+//         } else {
+//             // Destination reached
+//             break;
+//         }
+//     }
+//     return instructions;
+// }
+
+function generateNaturalLanguage(route, interchanges) {
+
+    const instructions = [];
+
+    let currentIndex = 0;
+
+    while(currentIndex < route.length - 1) {
+
+        const currentStation = route[currentIndex];
+         const nextStation = route[currentIndex + 1];
+
+        //................................. WALKING
+
+        if (nextStation.line === "Walking") {
+
+            instructions.push(
+                `Walk from ${currentStation.name} to ${nextStation.name}.`
+            );
+
+            currentIndex++;
+            continue;
+        }
+
+
+        //.......................... FIND NEXT INTERCHANGE
+        
+
+        let interchangeIndex = -1;
+
+        for (let i = currentIndex + 1; i < route.length; i++) {
+
+            const interchange = interchanges.find(
+                item => item.station === route[i].name
+            );
+
+            if (interchange) {
+                 interchangeIndex = i;
+                break;
+            }
+        }
+
+
+        // .................................FIND TARGET
+
+        const targetIndex =
+            interchangeIndex !== -1
+                ? interchangeIndex
+                : route.length - 1;
+
+        const targetStation = route[targetIndex];
+
+
+        // ...................START OF JOURNEY
+
+        if (currentIndex === 0) {
+
+            instructions.push(
+                `From ${currentStation.name}, take the ${nextStation.line} towards ${nextStation.towards}.`
+            );
+        }
+
+
+        // .......................................
+        // COUNT STATIONS
+
+        const stationCount = targetIndex - currentIndex;
+
+        if (stationCount > 0) {
+
+            instructions.push(
+                `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
+            );
+        }
+
+
+        // ...............................................
+        // INTERCHANGE
+
+        if (interchangeIndex !== -1) {
+
+            const nextRouteStation = route[interchangeIndex + 1];
+
+            if (nextRouteStation.line === "Walking") {
+
+                instructions.push(
+                    `Walk from ${targetStation.name} to ${nextRouteStation.name}.`
+                );
+
+                currentIndex = interchangeIndex + 1;
+
+            } else {
+
+                instructions.push(
+                    `Change at ${targetStation.name} and take the ${nextRouteStation.line} towards ${nextRouteStation.towards}.`
+                );
+
+                currentIndex = interchangeIndex;
+            }
+
+        } else {
+
+            break;
+        }
+    }
+
+    return instructions;
+}
 
 
 app.post("/route", (req, res) => {
@@ -270,6 +392,12 @@ app.post("/route", (req, res) => {
         }
     }
 
+    //........working on natural lang generation
+    const instructions = generateNaturalLanguage(
+        route,
+        interchanges
+    );
+
     const stationMoves = route.length - 1;
 
     // res.json({
@@ -287,7 +415,21 @@ app.post("/route", (req, res) => {
         interchanges,
         cost: result.distance,
         route,
+        instructions
     });
+});
+
+app.get("/stations", (req, res) => {
+    const stations = [];
+
+    for (const [id, station] of stationMap) {
+        stations.push({
+            id,
+            name: station.name
+        });
+    }
+
+    res.json(stations);
 });
 
 app.get("/index", (req, res) => {

@@ -1,0 +1,173 @@
+
+* {
+  box-sizing: border-box;
+  }
+
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: rgb(241, 243, 246);
+color: #222;
+}
+
+.header {
+width: 100%;
+padding: 20px 7%;
+background: white;
+border-bottom: 1px solid #e5e5e5;
+}
+
+.site-name {
+text-align: center;
+margin: 0;
+font-size: 28px;
+font-weight: 700;
+}
+
+.container {
+width: 90%;
+max-width: 700px;
+margin: 60px auto;
+}
+
+.search-card {
+background: white;
+padding: 35px;
+border-radius: 14px;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+margin-top: 0;
+margin-bottom: 8px;
+font-size: 28px;
+}
+
+.subtitle {
+margin-top: 0;
+margin-bottom: 30px;
+color: #666;
+}
+
+.form-group {
+margin-bottom: 20px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: 600;
+}
+
+.form-group input {
+width: 100%;
+padding: 14px;
+border: 1px solid #ccc;
+border-radius: 8px;
+font-size: 16px;
+outline: none;
+}
+
+.form-group input:focus {
+border-color: #333;
+}
+
+.find-btn {
+width: 100%;
+padding: 14px;
+border: none;
+border-radius: 8px;
+background: #222;
+color: white;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+}
+
+.find-btn:hover {
+background: #444;
+}
+
+/* ---------- Page 2 ............................... */
+
+.route-card {
+background: white;
+padding: 35px;
+border-radius: 14px;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.route-title {
+margin-top: 0;
+margin-bottom: 8px;
+font-size: 26px;
+}
+
+.route-summary {
+color: #666;
+margin-bottom: 30px;
+}
+
+.instructions {
+color: rgb(120, 35, 190);
+padding-left: 25px;
+margin-bottom: 30px;
+}
+
+.instructions li {
+margin-bottom: 18px;
+line-height: 1.6;
+font-size: 17px;
+}
+
+.instructions li::marker {
+    color: #222;
+    font-weight: 600;
+}
+.back-btn {
+display: inline-block;
+text-decoration: none;
+padding: 12px 20px;
+border-radius: 8px;
+background: #eee;
+color: #222;
+font-weight: 600;
+}
+
+.back-btn:hover {
+background: #ddd;
+}
+
+/* ---------- Mobile ----------------------- */
+
+@media (max-width: 600px) {
+
+
+.header {
+    padding: 18px 5%;
+}
+
+.container {
+    width: 92%;
+    margin: 35px auto;
+}
+
+.search-card,
+.route-card {
+    padding: 25px;
+}
+
+.logo {
+    font-size: 24px;
+}
+
+.page-title {
+    font-size: 24px;
+}
+
+.route-title {
+    font-size: 22px;
+}
+
+
+}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -38,5 +38,77 @@
     </button>
 
 </form>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MetroRasta</title>
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <h1 class="site-name">MetroRasta</h1>
+</header>
+
+
+<main class="container">
+
+    <div class="search-card">
+
+        <h2 class="page-title">Find Your Metro Route</h2>
+        <br>
+
+        <form action="/route" method="post">
+
+            <div class="form-group">
+                <label for="source">From</label>
+
+                <input
+                    name="source"
+                    id="source"
+                    type="text"
+                    placeholder="Enter source station"
+                    list="station-list"
+                    required
+                >
+                
+            </div>
+
+
+            <div class="form-group">
+                <label for="destination">To</label>
+
+                <input
+                    name="destination"
+                    id="destination"
+                    type="text"
+                    placeholder="Enter destination station"
+                    list="station-list"
+                    required
+                >
+            </div>
+            <datalist id="station-list"></datalist>
+
+            <button type="submit" class="find-btn">
+                Find Route
+            </button>
+
+        </form>
+
+    </div>
+
+</main>
+<script src="/js/script.js"></script>
 </body>
 </html>
