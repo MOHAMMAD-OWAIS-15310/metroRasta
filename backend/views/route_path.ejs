@@ -26,7 +26,7 @@
         <%= source %> → <%= destination %>
     </h2>
     <ol>
-        <% for (let instruction of instructions) { %>
+        <% for (let instruction of instructions.english) { %>
             <li>
                 <%= instruction %>
             </li>
@@ -69,9 +69,26 @@
         <p class="route-summary">
             Total stations = <%= stationMoves %> 
         </p>
-        <ol class="instructions">
-            <% for (let instruction of instructions) { %>
-                <b><li></b>
+        <div
+            id="route-data"
+            data-english='<%= JSON.stringify(instructions.english) %>'
+            data-hinglish='<%= JSON.stringify(instructions.hinglish) %>'
+            data-hindi='<%= JSON.stringify(instructions.hindi) %>'
+        ></div>
+        <div class="language-toggle">
+            <button type="button" class="lang-btn active" data-language="english">
+                English
+            </button>
+            <button type="button" class="lang-btn" data-language="hinglish">
+                Hinglish
+            </button>
+            <button type="button" class="lang-btn" data-language="hindi">
+                हिंदी
+            </button>
+        </div>
+        <ol class="instructions" id="instruction-list">
+            <% for (let instruction of instructions.english) { %>
+                <li>
                     <%= instruction %>
                 </li>
             <% } %>
@@ -84,6 +101,53 @@
     </div>
 
 </main>
+<script>
 
+    const routeData = document.getElementById("route-data");
+
+    const instructions = {
+        english: JSON.parse(routeData.dataset.english),
+        hinglish: JSON.parse(routeData.dataset.hinglish),
+        hindi: JSON.parse(routeData.dataset.hindi)
+    };
+
+
+    const instructionList =
+        document.getElementById("instruction-list");
+
+    const languageButtons =
+        document.querySelectorAll(".lang-btn");
+
+
+    languageButtons.forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const language = this.dataset.language;
+
+            instructionList.innerHTML = "";
+
+            instructions[language].forEach(instruction => {
+
+                const li = document.createElement("li");
+
+                li.textContent = instruction;
+
+                instructionList.appendChild(li);
+
+            });
+
+
+            languageButtons.forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            this.classList.add("active");
+
+        });
+
+    });
+
+</script>
 </body>
 </html>

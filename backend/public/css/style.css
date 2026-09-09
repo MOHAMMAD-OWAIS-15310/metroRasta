@@ -85,7 +85,38 @@ cursor: pointer;
 }
 
 .find-btn:hover {
-background: #444;
+background: #505050;
+}
+
+.form-group {
+    position: relative;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+
+    background: rgb(220, 222, 223);
+    border: 1px solid #ccc;
+    border-top: none;
+
+    max-height: 200px;
+    overflow-y: auto;
+
+    display: none;
+
+    z-index: 1000;
+}
+
+.suggestion {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.suggestion:hover {
+    background-color: #a6ccf7;
 }
 
 /* ---------- Page 2 ............................... */
@@ -136,6 +167,36 @@ font-weight: 600;
 
 .back-btn:hover {
 background: #ddd;
+}
+
+
+.language-toggle {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.lang-btn {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.lang-btn:hover {
+    background-color: #f2f2f2;
+}
+
+.lang-btn.active {
+    background-color: #333;
+    color: white;
+    border-color: #333;
 }
 
 /* ---------- Mobile ----------------------- */

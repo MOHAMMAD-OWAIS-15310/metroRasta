@@ -143,27 +143,51 @@ function findStationId(stationMap, stationName) {
 start();
 
 // //..........working on natural language generation
+
 // function generateNaturalLanguage(route, interchanges) {
 
 //     const instructions = [];
-//     let currentIndex = 0;
-//     while (currentIndex < route.length - 1) {
-//         const currentStation = route[currentIndex];
 
-//         // Find the next interchange after current station
+//     let currentIndex = 0;
+
+//     while(currentIndex < route.length - 1) {
+
+//         const currentStation = route[currentIndex];
+//          const nextStation = route[currentIndex + 1];
+
+//         //................................. WALKING
+
+//         if (nextStation.line === "Walking") {
+
+//             instructions.push(
+//                 `Walk from ${currentStation.name} to ${nextStation.name}.`
+//             );
+
+//             currentIndex++;
+//             continue;
+//         }
+
+
+//         //.......................... FIND NEXT INTERCHANGE
+        
+
 //         let interchangeIndex = -1;
 
 //         for (let i = currentIndex + 1; i < route.length; i++) {
+
 //             const interchange = interchanges.find(
 //                 item => item.station === route[i].name
 //             );
+
 //             if (interchange) {
-//                 interchangeIndex = i;
+//                  interchangeIndex = i;
 //                 break;
 //             }
 //         }
 
-//         // If no interchange, destination is the end
+
+//         // .................................FIND TARGET
+
 //         const targetIndex =
 //             interchangeIndex !== -1
 //                 ? interchangeIndex
@@ -171,155 +195,186 @@ start();
 
 //         const targetStation = route[targetIndex];
 
-//         // First instruction: take the current line
+
+//         // ...................START OF JOURNEY
+
 //         if (currentIndex === 0) {
-//             const firstStation = route[1];
 
 //             instructions.push(
-//                 `From ${currentStation.name}, take the ${firstStation.line} towards ${firstStation.towards}.`
+//                 `From ${currentStation.name}, take the ${nextStation.line} towards ${nextStation.towards}.`
 //             );
-
 //         }
 
-//         // Number of stations travelled
+
+//         // .......................................
+//         // COUNT STATIONS
+
 //         const stationCount = targetIndex - currentIndex;
 
-//         instructions.push(
-//             `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
-//         );
+//         if (stationCount > 0) {
 
-//         // If this is an interchange
+//             instructions.push(
+//                 `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
+//             );
+//         }
+
+
+//         // ...............................................
+//         // INTERCHANGE
+
 //         if (interchangeIndex !== -1) {
-//             const nextStation = route[interchangeIndex + 1];
-//             // instructions.push(
-//             //     `Change at ${targetStation.name} and take the ${nextStation.line} towards ${nextStation.towards}.`
-//             // );
-//             if (nextStation.line === "Walking") {
+
+//             const nextRouteStation = route[interchangeIndex + 1];
+
+//             if (nextRouteStation.line === "Walking") {
+
 //                 instructions.push(
-//                     `Walk from ${targetStation.name} to ${nextStation.name}.`
+//                     `Walk from ${targetStation.name} to ${nextRouteStation.name}.`
 //                 );
-//             } else{
+
+//                 currentIndex = interchangeIndex + 1;
+
+//             } else {
+
 //                 instructions.push(
-//                     `Change at ${targetStation.name} and take the ${nextStation.line} towards ${nextStation.towards}.`
+//                     `Change at ${targetStation.name} and take the ${nextRouteStation.line} towards ${nextRouteStation.towards}.`
 //                 );
+
+//                 currentIndex = interchangeIndex;
 //             }
-//             currentIndex = interchangeIndex;
+
 //         } else {
-//             // Destination reached
+
 //             break;
 //         }
 //     }
+
 //     return instructions;
 // }
 
+
 function generateNaturalLanguage(route, interchanges) {
 
-    const instructions = [];
+    const english = [];
+    const hinglish = [];
+    const hindi = [];
 
     let currentIndex = 0;
-
-    while(currentIndex < route.length - 1) {
-
+    while (currentIndex < route.length - 1) {
         const currentStation = route[currentIndex];
-         const nextStation = route[currentIndex + 1];
+        const nextStation = route[currentIndex + 1];
 
         //................................. WALKING
-
         if (nextStation.line === "Walking") {
-
-            instructions.push(
+            english.push(
                 `Walk from ${currentStation.name} to ${nextStation.name}.`
             );
-
+            hinglish.push(
+                `${currentStation.name} se ${nextStation.name} tak paidal chalein.`
+            );
+            hindi.push(
+                `${currentStation.name} से ${nextStation.name} तक पैदल चलें।`
+            );
             currentIndex++;
             continue;
         }
 
-
         //.......................... FIND NEXT INTERCHANGE
-        
 
         let interchangeIndex = -1;
-
         for (let i = currentIndex + 1; i < route.length; i++) {
-
             const interchange = interchanges.find(
                 item => item.station === route[i].name
             );
-
             if (interchange) {
-                 interchangeIndex = i;
+                interchangeIndex = i;
                 break;
             }
         }
 
-
-        // .................................FIND TARGET
+        //................................. FIND TARGET
 
         const targetIndex =
             interchangeIndex !== -1
                 ? interchangeIndex
                 : route.length - 1;
-
         const targetStation = route[targetIndex];
 
-
-        // ...................START OF JOURNEY
+        //................................. START OF JOURNEY
 
         if (currentIndex === 0) {
-
-            instructions.push(
+            english.push(
                 `From ${currentStation.name}, take the ${nextStation.line} towards ${nextStation.towards}.`
             );
+            hinglish.push(
+                `${currentStation.name} se ${nextStation.line} lein, ${nextStation.towards} ki taraf.`
+            );
+            hindi.push(
+                `${currentStation.name} से ${nextStation.line} लें, ${nextStation.towards} की ओर।`
+            );
         }
 
-
-        // .......................................
-        // COUNT STATIONS
+        //................................ COUNT STATIONS
 
         const stationCount = targetIndex - currentIndex;
-
         if (stationCount > 0) {
-
-            instructions.push(
+            english.push(
                 `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
+            );
+            hinglish.push(
+                `${stationCount} ${stationCount === 1 ? "station" : "stations"} travel karein aur ${targetStation.name} par utar jaayein.`
+            );
+            hindi.push(
+                `${stationCount} ${stationCount === 1 ? "स्टेशन" : "स्टेशनों"} तक यात्रा करें और ${targetStation.name} पर उतरें।`
             );
         }
 
 
-        // ...............................................
-        // INTERCHANGE
+        //........................................ INTERCHANGE
 
         if (interchangeIndex !== -1) {
-
             const nextRouteStation = route[interchangeIndex + 1];
-
+            // WALK AFTER INTERCHANGE
             if (nextRouteStation.line === "Walking") {
-
-                instructions.push(
+                english.push(
                     `Walk from ${targetStation.name} to ${nextRouteStation.name}.`
                 );
-
+                hinglish.push(
+                    `${targetStation.name} se ${nextRouteStation.name} tak paidal chalein.`
+                );
+                hindi.push(
+                    `${targetStation.name} से ${nextRouteStation.name} तक पैदल चलें।`
+                );
                 currentIndex = interchangeIndex + 1;
+            }
 
-            } else {
 
-                instructions.push(
+            // NORMAL INTERCHANGE
+            else {
+                english.push(
                     `Change at ${targetStation.name} and take the ${nextRouteStation.line} towards ${nextRouteStation.towards}.`
                 );
-
+                hinglish.push(
+                    `${targetStation.name} par line badlein aur ${nextRouteStation.line} lein, ${nextRouteStation.towards} ki taraf.`
+                );
+                hindi.push(
+                    `${targetStation.name} पर लाइन बदलें और ${nextRouteStation.line} लें, ${nextRouteStation.towards} की ओर।`
+                );
                 currentIndex = interchangeIndex;
             }
 
         } else {
-
             break;
         }
     }
 
-    return instructions;
-}
 
+    return {
+        english,
+        hinglish,
+        hindi
+    };
+}
 
 app.post("/route", (req, res) => {
 

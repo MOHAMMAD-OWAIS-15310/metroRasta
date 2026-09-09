@@ -66,39 +66,40 @@
 
     <div class="search-card">
 
-        <h2 class="page-title">Find Your Metro Route</h2>
+        <h2 class="page-title">Find Your Metro Route ( मेट्रो रूट खोजें )</h2>
         <br>
 
         <form action="/route" method="post">
 
             <div class="form-group">
-                <label for="source">From</label>
+                <label for="source">From (शुरू)</label>
 
                 <input
                     name="source"
                     id="source"
                     type="text"
                     placeholder="Enter source station"
-                    list="station-list"
+                     autocomplete="off"
                     required
                 >
-                
+                <div id="source-suggestions" class="suggestions"></div>
             </div>
 
 
             <div class="form-group">
-                <label for="destination">To</label>
+                <label for="destination">To (खत्म)</label>
 
                 <input
                     name="destination"
                     id="destination"
                     type="text"
                     placeholder="Enter destination station"
-                    list="station-list"
+                     autocomplete="off"
                     required
                 >
+                <div id="destination-suggestions" class="suggestions"></div>
             </div>
-            <datalist id="station-list"></datalist>
+            
 
             <button type="submit" class="find-btn">
                 Find Route
