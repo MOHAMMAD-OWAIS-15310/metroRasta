@@ -2,6 +2,10 @@ const INTERCHANGE_PENALTY = 6;
 const YAMUNA_BANK_ID = "89";
 const ASHOK_PARK_MAIN_ID = "34";
 
+//............working on airport line 
+const NORMAL_STATION_WEIGHT = 1;
+const AIRPORT_LINE_WEIGHT = 3;
+
 function findShortestPath(graph, start  , destination){
     const distances = new Map();
     const previous =new Map();
@@ -83,8 +87,15 @@ function findShortestPath(graph, start  , destination){
                 continue;
             }
 
-            let newDistance =
-                distances.get(currentState) + edge.weight;
+            // let newDistance =
+            //     distances.get(currentState) + edge.weight;
+
+            //.............................working on airport line
+            let travelWeight = edge.weight * NORMAL_STATION_WEIGHT;
+            if (edge.line === "Airport Express") {
+                travelWeight *= AIRPORT_LINE_WEIGHT;
+            }
+            let newDistance = distances.get(currentState) + travelWeight;
 
             // adding interchange penalty when line changes
             if (currentLine !== "START" && currentLine !== edge.line){

@@ -144,113 +144,6 @@ start();
 
 // //..........working on natural language generation
 
-// function generateNaturalLanguage(route, interchanges) {
-
-//     const instructions = [];
-
-//     let currentIndex = 0;
-
-//     while(currentIndex < route.length - 1) {
-
-//         const currentStation = route[currentIndex];
-//          const nextStation = route[currentIndex + 1];
-
-//         //................................. WALKING
-
-//         if (nextStation.line === "Walking") {
-
-//             instructions.push(
-//                 `Walk from ${currentStation.name} to ${nextStation.name}.`
-//             );
-
-//             currentIndex++;
-//             continue;
-//         }
-
-
-//         //.......................... FIND NEXT INTERCHANGE
-        
-
-//         let interchangeIndex = -1;
-
-//         for (let i = currentIndex + 1; i < route.length; i++) {
-
-//             const interchange = interchanges.find(
-//                 item => item.station === route[i].name
-//             );
-
-//             if (interchange) {
-//                  interchangeIndex = i;
-//                 break;
-//             }
-//         }
-
-
-//         // .................................FIND TARGET
-
-//         const targetIndex =
-//             interchangeIndex !== -1
-//                 ? interchangeIndex
-//                 : route.length - 1;
-
-//         const targetStation = route[targetIndex];
-
-
-//         // ...................START OF JOURNEY
-
-//         if (currentIndex === 0) {
-
-//             instructions.push(
-//                 `From ${currentStation.name}, take the ${nextStation.line} towards ${nextStation.towards}.`
-//             );
-//         }
-
-
-//         // .......................................
-//         // COUNT STATIONS
-
-//         const stationCount = targetIndex - currentIndex;
-
-//         if (stationCount > 0) {
-
-//             instructions.push(
-//                 `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
-//             );
-//         }
-
-
-//         // ...............................................
-//         // INTERCHANGE
-
-//         if (interchangeIndex !== -1) {
-
-//             const nextRouteStation = route[interchangeIndex + 1];
-
-//             if (nextRouteStation.line === "Walking") {
-
-//                 instructions.push(
-//                     `Walk from ${targetStation.name} to ${nextRouteStation.name}.`
-//                 );
-
-//                 currentIndex = interchangeIndex + 1;
-
-//             } else {
-
-//                 instructions.push(
-//                     `Change at ${targetStation.name} and take the ${nextRouteStation.line} towards ${nextRouteStation.towards}.`
-//                 );
-
-//                 currentIndex = interchangeIndex;
-//             }
-
-//         } else {
-
-//             break;
-//         }
-//     }
-
-//     return instructions;
-// }
 
 
 function generateNaturalLanguage(route, interchanges) {
@@ -270,7 +163,7 @@ function generateNaturalLanguage(route, interchanges) {
                 `Walk from ${currentStation.name} to ${nextStation.name}.`
             );
             hinglish.push(
-                `${currentStation.name} se ${nextStation.name} tak paidal chalein.`
+                `${currentStation.name} se ${nextStation.name} tak paidal chalo.`
             );
             hindi.push(
                 `${currentStation.name} से ${nextStation.name} तक पैदल चलें।`
@@ -307,7 +200,7 @@ function generateNaturalLanguage(route, interchanges) {
                 `From ${currentStation.name}, take the ${nextStation.line} towards ${nextStation.towards}.`
             );
             hinglish.push(
-                `${currentStation.name} se ${nextStation.line} lein, ${nextStation.towards} ki taraf.`
+                `${currentStation.name} se ${nextStation.line} lo, ${nextStation.towards} ki taraf.`
             );
             hindi.push(
                 `${currentStation.name} से ${nextStation.line} लें, ${nextStation.towards} की ओर।`
@@ -322,7 +215,7 @@ function generateNaturalLanguage(route, interchanges) {
                 `Travel ${stationCount} ${stationCount === 1 ? "station" : "stations"} and get out at ${targetStation.name}.`
             );
             hinglish.push(
-                `${stationCount} ${stationCount === 1 ? "station" : "stations"} travel karein aur ${targetStation.name} par utar jaayein.`
+                `${stationCount} ${stationCount === 1 ? "station" : "stations"} travel karo aur ${targetStation.name} par utar jao.`
             );
             hindi.push(
                 `${stationCount} ${stationCount === 1 ? "स्टेशन" : "स्टेशनों"} तक यात्रा करें और ${targetStation.name} पर उतरें।`
@@ -340,7 +233,7 @@ function generateNaturalLanguage(route, interchanges) {
                     `Walk from ${targetStation.name} to ${nextRouteStation.name}.`
                 );
                 hinglish.push(
-                    `${targetStation.name} se ${nextRouteStation.name} tak paidal chalein.`
+                    `${targetStation.name} se ${nextRouteStation.name} tak paidal chalo.`
                 );
                 hindi.push(
                     `${targetStation.name} से ${nextRouteStation.name} तक पैदल चलें।`
@@ -355,7 +248,7 @@ function generateNaturalLanguage(route, interchanges) {
                     `Change at ${targetStation.name} and take the ${nextRouteStation.line} towards ${nextRouteStation.towards}.`
                 );
                 hinglish.push(
-                    `${targetStation.name} par line badlein aur ${nextRouteStation.line} lein, ${nextRouteStation.towards} ki taraf.`
+                    `${targetStation.name} par line badlo aur ${nextRouteStation.line} lo, ${nextRouteStation.towards} ki taraf.`
                 );
                 hindi.push(
                     `${targetStation.name} पर लाइन बदलें और ${nextRouteStation.line} लें, ${nextRouteStation.towards} की ओर।`

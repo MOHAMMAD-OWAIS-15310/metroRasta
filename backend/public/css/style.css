@@ -199,6 +199,48 @@ background: #ddd;
     border-color: #333;
 }
 
+
+/* listen button */
+.audio-player {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.audio-play-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 11px 18px;
+    border: none;
+    border-radius: 8px;
+
+    background: #11726f;
+    color: white;
+
+    font-size: 15px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+.audio-play-btn:hover{
+    background: rgb(73, 24, 24);
+}
+
+.audio-play-btn i {
+    font-size: 15px;
+}
+
+.audio-play-btn:active {
+    transform: scale(0.97);
+}
+.vol-button{
+    font-size: 25px;
+}
+
 /* ---------- Mobile ----------------------- */
 
 @media (max-width: 600px) {
