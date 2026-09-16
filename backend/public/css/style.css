@@ -98,7 +98,8 @@ background: #505050;
     left: 0;
     right: 0;
 
-    background: rgb(220, 222, 223);
+    background: rgb(55, 11, 17);
+    color: white;
     border: 1px solid #ccc;
     border-top: none;
 
@@ -116,7 +117,7 @@ background: #505050;
 }
 
 .suggestion:hover {
-    background-color: #a6ccf7;
+    background-color: #856666;
 }
 
 /* ---------- Page 2 ............................... */
@@ -238,7 +239,7 @@ background: #ddd;
     transform: scale(0.97);
 }
 .vol-button{
-    font-size: 25px;
+    font-size: 20px;
 }
 
 /* ---------- Mobile ----------------------- */
