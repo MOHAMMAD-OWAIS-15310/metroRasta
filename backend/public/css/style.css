@@ -22,6 +22,7 @@ text-align: center;
 margin: 0;
 font-size: 28px;
 font-weight: 700;
+color: rgb(112, 3, 3);
 }
 
 .container {
@@ -118,6 +119,35 @@ background: #505050;
 
 .suggestion:hover {
     background-color: #856666;
+}
+
+.footer{
+
+    position: fixed;
+    /* bottom: 0; */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    /* text-decoration: none; */
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+    
+
+    width: auto ;
+    font-weight: bolder;
+    margin-bottom: 5px;
+    
+}
+.footer a {
+    text-decoration: none;
+    color: red !important;
+}
+.footer a:hover {
+    text-decoration:underline;
+    color: rgb(41, 100, 159) !important;
 }
 
 /* ---------- Page 2 ............................... */
@@ -241,6 +271,50 @@ background: #ddd;
 .vol-button{
     font-size: 20px;
 }
+
+/* microphone */
+.input-with-mic {
+    display: flex;
+    align-items: center;
+}
+
+.input-with-mic input {
+    flex: 1;
+}
+
+.mic-btn {
+    width: 45px;
+    height: 45px;
+    margin-left: 8px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #2563eb;
+    color: white;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+}
+
+.mic-btn:active {
+    transform: scale(0.96);
+}
+
+/* ..........................disclaimer */
+.disclaimer-content{
+    font-size: large;
+    margin: 10px;
+}
+
+
+
+
 
 /* ---------- Mobile ----------------------- */
 

@@ -269,10 +269,16 @@ function generateNaturalLanguage(route, interchanges) {
     };
 }
 
+
 app.post("/route", (req, res) => {
+    try {
 
     const { source, destination } = req.body;
-
+    if (!source || !destination) {
+        return res.status(400).render("error.ejs", {
+            error: "Please enter both source and destination stations."
+        });
+    }
     const start = findStationId(stationMap, source);
     const end = findStationId(stationMap, destination);
 
@@ -280,16 +286,16 @@ app.post("/route", (req, res) => {
     console.log("Destination ID:", end);
 
     if (!start || !end) {
-        return res.status(404).json({
-            error: "Station not found"
+        return res.status(404).render("error.ejs", {
+            error: " (स्टेशन का नाम गलत डाला है।) Incorrect station name entered/Station not found."
         });
     }
 
     const result = findShortestPath(graph, start, end);
 
     if (result.distance === Infinity) {
-        return res.status(404).json({
-            error: "No route found between these stations"
+        return res.status(404).render("error.ejs", {
+            error: "No route found between these stations."
         });
     }
 
@@ -365,6 +371,16 @@ app.post("/route", (req, res) => {
         route,
         instructions
     });
+
+    }catch (err) {
+
+        console.error("Route error:", err);
+
+        res.status(500).render("error.ejs", {
+            error: err.message
+        });
+
+    }
 });
 
 app.get("/stations", (req, res) => {
@@ -386,9 +402,16 @@ app.get("/index", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    res.send("metroRasta is running");
+    // res.send("metroRasta is running");
+    res.render("index.ejs");
 });
+app.get("/disclaimer",(req,res)=>{
+    res.render("disclaimer.ejs");
+})
 
 app.listen(8080, () => {
     console.log("server is listening to port 8080");
 });
+
+
+
