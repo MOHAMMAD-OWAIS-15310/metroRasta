@@ -118,7 +118,7 @@ background: #505050;
 }
 
 .suggestion:hover {
-    background-color: #856666;
+    background-color: #9d5454;
 }
 
 .footer{
@@ -172,6 +172,7 @@ margin-bottom: 30px;
 
 .instructions {
 color: rgb(120, 35, 190);
+/* color: black; */
 padding-left: 25px;
 margin-bottom: 30px;
 }

@@ -52,7 +52,8 @@ const lineEndpoints = {
 
     // Magenta
     "Magenta Line|Magenta Botanical Garden": {
-        from: "Janak Puri West",
+        // from: "Janak Puri West",
+        from: "Krishna Park Extension",
         to: "Botanical Garden"
     },
 

@@ -402,6 +402,11 @@ function patchNetwork(graph, stationMap,lineSequences){
         "Magenta Line|Magenta Deepali Chowk",
         ["173", "534", "38", "533", "532", "531", "530"]
     );
+    //................added this after getting null in towards for krishna park ext (26sept 2026)
+    lineSequences.set(
+        "Magenta Line|Magenta Botanical Garden",
+        ["529", "108", "195", "194", "193", "192", "191", "190", "189", "188", "187", "186", "59", "185", "184", "183", "182", "131", "167", "166", "165", "164", "163", "162", "161", "81"]
+    );
 
     const pinkCircularSequence =
     createPinkCircularSequence(graph, stationMap);
