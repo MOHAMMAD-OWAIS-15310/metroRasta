@@ -145,10 +145,10 @@ async function start(){
 
         
         console.log(
-    "PINK FROM APP:",
-    pinkCircularSequence?.length,
-    pinkCircularSequence?.map(id => stationMap.get(id)?.name)
-);
+            "PINK FROM APP:",
+            pinkCircularSequence?.length,
+            pinkCircularSequence?.map(id => stationMap.get(id)?.name)
+        );
 
 
 
@@ -380,6 +380,11 @@ app.post("/route", async (req, res) => {
     );
 
     console.log("Route:", result.path);
+    //...........................................................
+    const PORT = process.env.PORT || 8080;
+    app.listen(PORT, () => {
+        console.log(`Server is listening on port ${PORT}`);
+    });
     console.log("Distance:", result.distance);
 
     const route = result.path.map(step => ({
@@ -490,7 +495,8 @@ app.get("/disclaimer",(req,res)=>{
     res.render("disclaimer.ejs");
 })
 
-app.listen(8080, () => {
-    console.log("server is listening to port 8080");
-});
+// const PORT = process.env.PORT || 8080;
+// app.listen(PORT, () => {
+//     console.log(`Server is listening to port ${PORT}`);
+// });
 
