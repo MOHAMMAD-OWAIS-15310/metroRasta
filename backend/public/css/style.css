@@ -125,7 +125,7 @@ background: #505050;
 
     position: fixed;
     /* bottom: 0; */
-    bottom: 10px;
+    bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
 
@@ -135,8 +135,8 @@ background: #505050;
     text-align: center;
     white-space: nowrap;
     
-
-    width: auto ;
+    background: white;
+    width: 100% ;
     font-weight: bolder;
     margin-bottom: 5px;
     
