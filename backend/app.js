@@ -192,7 +192,12 @@ async function start(){
         // console.log("destination-",stationMap.get("60").name);
 
         console.log("Route:", result.path);
-
+        
+        //...........................................................
+        const PORT = process.env.PORT || 8080;
+        app.listen(PORT, () => {
+            console.log(`Server is listening on port ${PORT}`);
+        });
 
 
     } catch(err){
@@ -380,11 +385,6 @@ app.post("/route", async (req, res) => {
     );
 
     console.log("Route:", result.path);
-    //...........................................................
-    const PORT = process.env.PORT || 8080;
-    app.listen(PORT, () => {
-        console.log(`Server is listening on port ${PORT}`);
-    });
     console.log("Distance:", result.distance);
 
     const route = result.path.map(step => ({
