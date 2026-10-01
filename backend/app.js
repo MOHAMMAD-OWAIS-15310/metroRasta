@@ -1,6 +1,13 @@
+require("dotenv").config();
+
 const express =require("express");
 const cors =require("cors");
 const path = require("path");
+const mongoose = require("mongoose");
+
+const crypto = require("crypto");
+const AnonymousUser = require("./models/AnonymousUser");
+const Stats = require("./models/Stats");
 
 let stationMap;
 let graph;
@@ -9,6 +16,13 @@ let pinkCircularSequence;
 
 
 const app = express();
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log("MongoDB connected");
+    })
+    .catch((err) => {
+        console.error("MongoDB connection error:", err);
+    });
 const {loadFile }=require("./services/metroLoader");
 const {createStationMap } =require("./services/graphBuilder");
 const {createRouteMap } =require("./services/graphBuilder");
@@ -29,6 +43,64 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+function getAnonymousUserId(req, res) {
+    const cookies = req.headers.cookie || "";
+
+    const match = cookies
+        .split(";")
+        .find(cookie => cookie.trim().startsWith("metrorasta_user_id="));
+
+    if (match) {
+        return decodeURIComponent(match.split("=")[1]);
+    }
+
+    const anonymousId = crypto.randomUUID();
+
+    res.setHeader(
+        "Set-Cookie",
+        `metrorasta_user_id=${encodeURIComponent(anonymousId)}; Max-Age=31536000; Path=/; HttpOnly; SameSite=Lax`
+    );
+
+    return anonymousId;
+}
+// async function trackAnonymousUser(req, res) {
+//     console.log("TRACKING FUNCTION CALLED");
+//     const anonymousId = getAnonymousUserId(req, res);
+
+//     await AnonymousUser.findOneAndUpdate(
+//         { anonymousId },
+//         { $setOnInsert: { anonymousId } },
+//         {
+//             upsert: true,
+//             new: true
+//         }
+//     );
+// }
+async function trackAnonymousUser(req, res) {
+    const anonymousId = getAnonymousUserId(req, res);
+
+    console.log("Anonymous ID:", anonymousId);
+
+    const result = await AnonymousUser.updateOne(
+        { anonymousId: anonymousId },
+        { $setOnInsert: { anonymousId: anonymousId } },
+        { upsert: true }
+    );
+
+    // console.log("MongoDB result:", result);
+    // const count = await AnonymousUser.countDocuments();
+
+    // console.log("Anonymous users in database:", count);
+    // const users = await AnonymousUser.find();
+    // console.log("Users:", users);
+}
+async function trackRouteSearch() {
+    await Stats.updateOne(
+        { _id: "main" },
+        { $inc: { routeSearches: 1 } },
+        { upsert: true }
+    );
+}
 
 async function start(){
     try {
@@ -270,7 +342,7 @@ function generateNaturalLanguage(route, interchanges) {
 }
 
 
-app.post("/route", (req, res) => {
+app.post("/route", async (req, res) => {
     try {
 
     const { source, destination } = req.body;
@@ -353,7 +425,7 @@ app.post("/route", (req, res) => {
     );
 
     const stationMoves = route.length - 1;
-
+    await trackRouteSearch();
     // res.json({
     //     source,
     //     destination,
@@ -401,9 +473,18 @@ app.get("/index", (req, res) => {
     res.render("index.ejs");
 });
 
-app.get("/", (req, res) => {
-    // res.send("metroRasta is running");
-    res.render("index.ejs");
+// app.get("/", (req, res) => {
+//     // res.send("metroRasta is running");
+//     res.render("index.ejs");
+// });
+app.get("/", async (req, res) => {
+    try {
+        await trackAnonymousUser(req, res);
+        res.render("index.ejs");
+    } catch (err) {
+        console.error("User tracking error:", err);
+        res.render("index.ejs");
+    }
 });
 app.get("/disclaimer",(req,res)=>{
     res.render("disclaimer.ejs");
